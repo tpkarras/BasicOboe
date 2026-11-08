@@ -363,7 +363,7 @@ public final class Stream {
                         valid = true;
 
                         used.add(channelMask);
-
+                        break;
                     }
 
                 }
@@ -421,6 +421,7 @@ public final class Stream {
                         valid = true;
 
                         used.add(channelMask);
+                        break;
 
                     }
 
