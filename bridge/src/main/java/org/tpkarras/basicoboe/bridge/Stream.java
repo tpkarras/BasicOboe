@@ -16,6 +16,7 @@ import org.tpkarras.basicoboe.bridge.constants.PerformanceMode;
 import org.tpkarras.basicoboe.bridge.constants.SampleRate;
 import org.tpkarras.basicoboe.bridge.constants.Usage;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public final class Stream {
@@ -341,17 +342,34 @@ public final class Stream {
 
             int[] masks = {org.tpkarras.basicoboe.bridge.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideRight};
             int tempChannelMask = 0;
+            ArrayList<Integer> used = new ArrayList<>();
 
             for (int channelMask : channelMasks) {
 
+                boolean valid = false;
+
                 for (int mask : masks) {
 
-                    if (mask != channelMask) {
+                    if (mask == channelMask) {
 
-                    throw new Exception("Not a valid channel mask");
+                        for(Integer usedC : used) {
+
+                            if(usedC == mask){
+                                throw new Exception("Cannot reuse channel mask");
+                            }
+
+                        }
+
+                        valid = true;
+
+                        used.add(channelMask);
 
                     }
 
+                }
+
+                if(!valid){
+                    throw new Exception("Not a valid channel mask");
                 }
 
                 tempChannelMask |= channelMask;
@@ -382,17 +400,34 @@ public final class Stream {
 
             int[] masks = {org.tpkarras.basicoboe.bridge.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideRight};
             int tempChannelMask = 0;
+            ArrayList<Integer> used = new ArrayList<>();
 
             for (int channelMask : channelMasks) {
 
+                boolean valid = false;
+
                 for (int mask : masks) {
 
-                    if (mask != channelMask) {
+                    if (mask == channelMask) {
 
-                        throw new Exception("Not a valid channel mask");
+                        for(Integer usedC : used) {
+
+                            if(usedC == mask){
+                                throw new Exception("Cannot reuse channel mask");
+                            }
+
+                        }
+
+                        valid = true;
+
+                        used.add(channelMask);
 
                     }
 
+                }
+
+                if(!valid){
+                    throw new Exception("Not a valid channel mask");
                 }
 
                 tempChannelMask |= channelMask;
