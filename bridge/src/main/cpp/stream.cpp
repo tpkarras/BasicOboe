@@ -378,9 +378,19 @@ Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
     int32_t totalSamples;
     int32_t framesPerBurst;
     if (!duplex) {
+        if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jfloatArray(nullptr);
+        }
         channelCount = BasicOboeEngine::stream->getChannelCount();
         framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
     } else {
+        if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jfloatArray(nullptr);
+        }
         channelCount = BasicOboeDuplexEngine::inputStream->getChannelCount();
         framesPerBurst = BasicOboeDuplexEngine::inputStream->getFramesPerBurst();
     }
@@ -404,9 +414,19 @@ Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
     int32_t totalSamples;
     int32_t framesPerBurst;
     if (!duplex) {
+        if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return;
+        }
         channelCount = BasicOboeEngine::stream->getChannelCount();
         framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
     } else {
+        if(BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return;
+        }
         channelCount = BasicOboeDuplexEngine::outputStream->getChannelCount();
         framesPerBurst = BasicOboeDuplexEngine::outputStream->getFramesPerBurst();
     }
@@ -424,8 +444,18 @@ JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thiz) {
     jint *tempBuffer;
     if (!duplex) {
+        if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         tempBuffer[0] = BasicOboeEngine::stream->getSampleRate();
     } else {
+        if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed || BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed ){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         tempBuffer[0] = BasicOboeDuplexEngine::inputStream->getSampleRate();
         tempBuffer[1] = BasicOboeDuplexEngine::outputStream->getSampleRate();
     }
@@ -438,8 +468,18 @@ JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject thiz) {
     jint *tempBuffer;
     if (!duplex) {
+        if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         tempBuffer[0] = BasicOboeEngine::stream->getChannelCount();
     } else {
+        if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed || BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed ){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         jfloatArray resultJava = env->NewFloatArray(2);
         tempBuffer[0] = BasicOboeDuplexEngine::inputStream->getChannelCount();
         tempBuffer[1] = BasicOboeDuplexEngine::outputStream->getChannelCount();
@@ -453,8 +493,18 @@ JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
     jint *id;
     if (!duplex) {
+        if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         id[0] = BasicOboeEngine::stream->getDeviceId();
     } else {
+        if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed || BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed ){
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
         id[0] = BasicOboeDuplexEngine::inputStream->getDeviceId();
         id[1] = BasicOboeDuplexEngine::outputStream->getDeviceId();
     }
