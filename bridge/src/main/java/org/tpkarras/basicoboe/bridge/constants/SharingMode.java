@@ -7,6 +7,6 @@ public final class SharingMode {
     }
 
     public static final String Exclusive = "Exclusive";
-    public static final String Shared = "Exclusive";
+    public static final String Shared = "Shared";
 
 }
