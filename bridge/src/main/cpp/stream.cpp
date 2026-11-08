@@ -260,7 +260,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
 
         if (instanceTasks.size() == 2 && current == 1) {
             instance.setBufferCapacityInFrames(
-                    BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * 2);
+                    BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * channels);
         }
 
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Opening stream");
@@ -303,21 +303,21 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
             if (instanceTasks.size() == 2) {
                 Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
                         BasicOboeDuplexEngine::outputStream->getChannelCount() * sizeof(float),
-                        BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * 2);
+                        BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * channels);
             } else {
                 Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
                         BasicOboeEngine::stream->getChannelCount() * sizeof(float),
-                        BasicOboeEngine::stream->getFramesPerBurst() * 2);
+                        BasicOboeEngine::stream->getFramesPerBurst() * channels);
             }
         } else if (current == 1) {
             if (instanceTasks.size() == 2) {
                 Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
                         BasicOboeDuplexEngine::inputStream->getChannelCount() * sizeof(float),
-                        BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * 2);
+                        BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * channels);
             } else {
                 Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
                         BasicOboeEngine::stream->getChannelCount() * sizeof(float),
-                        BasicOboeEngine::stream->getFramesPerBurst() * 2);
+                        BasicOboeEngine::stream->getFramesPerBurst() * channels);
             }
         }
 
