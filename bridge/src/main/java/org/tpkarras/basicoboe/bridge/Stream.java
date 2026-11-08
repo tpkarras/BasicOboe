@@ -32,7 +32,6 @@ public final class Stream {
     private int OutputChannelCount;
     private int InputChannelMask = 0;
     private int OutputChannelMask = 0;
-    private boolean Duplex = false;
     private String AudioAPI;
     private String performanceMode;
     private boolean sharingMode = false;
@@ -101,10 +100,6 @@ public final class Stream {
 
         } else {
             outputDevice = 0;
-        }
-
-        if(inputDevice > 0 && outputDevice > 0){
-            Duplex = true;
         }
 
     }
