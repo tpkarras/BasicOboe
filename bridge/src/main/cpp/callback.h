@@ -34,9 +34,9 @@ public:
     static std::shared_ptr<oboe::AudioStream> inputStream;
     static std::shared_ptr<oboe::AudioStream> outputStream;
     oboe::DataCallbackResult onBothStreamsReady(
-            const void *inputData,   // Contains captured microphone data
+            const void *inputData,
             int numInputFrames,
-            void *outputData,        // Where you write processed data for speaker playback
+            void *outputData,
             int numOutputFrames
     ) override {
 
