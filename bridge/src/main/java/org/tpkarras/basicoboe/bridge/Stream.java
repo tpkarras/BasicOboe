@@ -1,6 +1,5 @@
 package org.tpkarras.basicoboe.bridge;
 
-import android.Manifest;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.os.Build;
@@ -8,10 +7,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresPermission;
 
 import org.tpkarras.basicoboe.bridge.constants.AudioAPIs;
-import org.tpkarras.basicoboe.bridge.constants.AudioDirection;
 import org.tpkarras.basicoboe.bridge.constants.PerformanceMode;
 import org.tpkarras.basicoboe.bridge.constants.SampleRate;
 import org.tpkarras.basicoboe.bridge.constants.Usage;
