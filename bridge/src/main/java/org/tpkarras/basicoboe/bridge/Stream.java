@@ -1,11 +1,14 @@
 package org.tpkarras.basicoboe.bridge;
 
+import android.Manifest;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import org.tpkarras.basicoboe.bridge.constants.AudioAPIs;
 import org.tpkarras.basicoboe.bridge.constants.AudioDirection;
@@ -21,20 +24,26 @@ public final class Stream {
         Log.d("BasicOboe", "Loading bridge library");
         System.loadLibrary("bridge");
     }
-    private final AudioDeviceInfo device;
+    private final int inputDevice;
+    private final int outputDevice;
     private boolean initialized = false;
     private String Format;
-    private int iSampleRate;
-    private int ChannelCount;
-    private int ChannelMask = 0;
-    private int Direction = 0;
+    private int InputSampleRate;
+    private int OutputSampleRate;
+    private int InputChannelCount;
+    private int OutputChannelCount;
+    private int InputChannelMask = 0;
+    private int OutputChannelMask = 0;
+    private boolean Duplex = false;
     private String AudioAPI;
     private String performanceMode;
     private boolean sharingMode = false;
     private int famesPerCallback = 0;
-    private boolean IsSpatial = false;
-    private String iUsage;
-    private native void deviceInitialize(String packageName, String attributionTag, int deviceID, String format, int sampleRate, int channels, int channelMask, String audioAPI, String performanceMode, int direction, boolean sharingMode, int famesPerCallback, boolean isSpatial, String usage);
+    private boolean InputIsSpatial = false;
+    private boolean OutputIsSpatial = false;
+    private String InputUsage;
+    private String OutputUsage;
+    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String format, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
     private native void deviceTerminate();
     private native float[] readInput();
 
@@ -63,13 +72,39 @@ public final class Stream {
 
     }
 
-    public Stream(@NonNull AudioDeviceInfo Device){
+    public Stream(@Nullable AudioDeviceInfo InputDevice, @Nullable AudioDeviceInfo OutputDevice) throws Exception {
 
-        if(Device.isSource()){
-            Direction = AudioDirection.Input;
+        if(InputDevice == null && OutputDevice == null){
+            throw new Exception("Both parameters cannot be null");
         }
 
-        device = Device;
+        if(InputDevice != null) {
+
+            if (!InputDevice.isSource()) {
+                throw new Exception("Audio device not an input");
+            }
+
+            inputDevice = InputDevice.getId();
+
+        } else {
+            inputDevice = 0;
+        }
+
+        if(OutputDevice != null) {
+
+            if (!InputDevice.isSink()) {
+                throw new Exception("Audio device not an output");
+            }
+
+            outputDevice = OutputDevice.getId();
+
+        } else {
+            outputDevice = 0;
+        }
+
+        if(inputDevice > 0 && outputDevice > 0){
+            Duplex = true;
+        }
 
     }
 
@@ -89,29 +124,25 @@ public final class Stream {
         }
 
         String format;
-        int sampleRate;
-        int channels;
+        int inputSampleRate;
+        int outputSampleRate;
+        int inputChannelCount;
+        int outputChannelCount;
         String audioAPI;
-        String usage;
+        String inputUsage;
+        String outputUsage;
         String modePerformance;
         String attributionTag;
 
         modePerformance = Objects.requireNonNullElse(performanceMode, "");
         format  = Objects.requireNonNullElse(Format, "");
-        usage  = Objects.requireNonNullElse(iUsage, "");
+        outputUsage  = Objects.requireNonNullElse(OutputUsage, "");
+        inputUsage  = Objects.requireNonNullElse(InputUsage, "");
         audioAPI = Objects.requireNonNullElse(AudioAPI, "");
-
-        if(iSampleRate <= 0){
-            sampleRate = 0;
-        } else {
-            sampleRate = iSampleRate;
-        }
-
-        if(ChannelCount <= 0){
-            channels = 0;
-        } else {
-            channels = ChannelCount;
-        }
+        inputSampleRate = Objects.requireNonNullElse(InputSampleRate, 0);
+        outputSampleRate = Objects.requireNonNullElse(OutputSampleRate, 0);
+        inputChannelCount = Objects.requireNonNullElse(InputChannelCount, 0);
+        outputChannelCount = Objects.requireNonNullElse(OutputChannelCount, 0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             attributionTag = context.getAttributionTag();
@@ -119,7 +150,7 @@ public final class Stream {
             attributionTag = "";
         }
 
-        deviceInitialize(context.getPackageName(), attributionTag, device.getId(), format, sampleRate, channels, ChannelMask, audioAPI, modePerformance, Direction, sharingMode, famesPerCallback, IsSpatial, usage);
+        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, format, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, sharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
     initialized = true;
     }
 
@@ -129,7 +160,7 @@ public final class Stream {
             throw new Exception("Audio device not initialized");
         }
 
-        if(Direction != AudioDirection.Input && Direction != AudioDirection.Duplex){
+        if(inputDevice == 0){
             throw new Exception("Stream is not a input");
         }
 
@@ -142,7 +173,7 @@ public final class Stream {
             throw new Exception("Audio device not initialized");
         }
 
-        if(Direction != AudioDirection.Output && Direction != AudioDirection.Duplex){
+        if(outputDevice == 0){
             throw new Exception("Stream is not a output");
         }
 
@@ -164,36 +195,14 @@ public final class Stream {
 
     }
 
-    public void setDirection(int direction) throws Exception {
+    public void setInputSampleRate(int sampleRate) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        if(!ObjectMatch((Integer)direction, new Integer[]{AudioDirection.Input, AudioDirection.Output, AudioDirection.Duplex})){
-            throw new Exception("Not a valid direction");
-        }
-
-        if(direction == AudioDirection.Duplex && !(device.isSource() && device.isSink())) {
-            throw new Exception("Audio device is not a duplex device");
-        }
-
-        if(direction == AudioDirection.Input && !device.isSource()) {
-            throw new Exception("Audio device is not a input device");
-        }
-
-        if(direction == AudioDirection.Output && !device.isSink()) {
-            throw new Exception("Audio device is not a output device");
-        }
-
-        Direction = direction;
-
-    }
-
-    public void setSampleRate(int sampleRate) throws Exception {
-
-        if(initialized){
-            throw new Exception("Audio device already initialized");
+        if(inputDevice == 0){
+            throw new Exception("Audio device not an input device");
         }
 
         boolean valid = false;
@@ -213,33 +222,90 @@ public final class Stream {
             throw new Exception("Not a valid sample rate");
         }
 
-        iSampleRate = sampleRate;
+        InputSampleRate = sampleRate;
 
     }
 
-    public void setChannelCount(int channels) throws Exception {
+    public void setOutputSampleRate(int sampleRate) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
+        }
+
+        if(outputDevice == 0){
+            throw new Exception("Audio device not an output device");
+        }
+
+        boolean valid = false;
+
+        for (int check : new int[]{SampleRate.KHz8, SampleRate.KHz11p25, SampleRate.KHz16, SampleRate.KHz22p5, SampleRate.KHz44p1, SampleRate.KHz48, SampleRate.KHz88p2, SampleRate.KHz96, SampleRate.KHz176p4, SampleRate.KHz192}) {
+
+            if (check == sampleRate) {
+
+                valid = true;
+                break;
+
+            }
+
+        }
+
+        if(!valid){
+            throw new Exception("Not a valid sample rate");
+        }
+
+        OutputSampleRate = sampleRate;
+
+    }
+
+    public void setInputChannelCount(int channels) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(inputDevice == 0){
+            throw new Exception("Audio device not an input device");
         }
 
         if(channels < 0){
             throw new Exception("Invalid channel count");
         }
 
-        ChannelCount = channels;
+        InputChannelCount = channels;
 
     }
 
-    public void setChannelMask(int[] channelMasks) throws Exception {
+    public void setOutputChannelCount(int channels) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
+        if(outputDevice == 0){
+            throw new Exception("Audio device not an input device");
+        }
+
+        if(channels < 0){
+            throw new Exception("Invalid channel count");
+        }
+
+        OutputChannelCount = channels;
+
+    }
+
+    public void setInputChannelMask(int[] channelMasks) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(inputDevice == 0){
+            throw new Exception("Audio device not an input device");
+        }
+
         if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.bridge.constants.ChannelMask.Stereo) {
 
-            ChannelMask = channelMasks[0];
+            InputChannelMask = channelMasks[0];
 
         } else {
 
@@ -262,7 +328,48 @@ public final class Stream {
 
             }
 
-            ChannelMask = tempChannelMask;
+            InputChannelMask = tempChannelMask;
+
+        }
+
+    }
+
+    public void setOutputChannelMask(int[] channelMasks) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(outputDevice == 0){
+            throw new Exception("Audio device not an input device");
+        }
+
+        if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.bridge.constants.ChannelMask.Stereo) {
+
+            InputChannelMask = channelMasks[0];
+
+        } else {
+
+            int[] masks = {org.tpkarras.basicoboe.bridge.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideRight};
+            int tempChannelMask = 0;
+
+            for (int channelMask : channelMasks) {
+
+                for (int mask : masks) {
+
+                    if (mask != channelMask) {
+
+                        throw new Exception("Not a valid channel mask");
+
+                    }
+
+                }
+
+                tempChannelMask |= channelMask;
+
+            }
+
+            InputChannelMask = tempChannelMask;
 
         }
 
@@ -320,17 +427,27 @@ public final class Stream {
 
     }
 
-    public void setSpatialization(boolean isSpatial) throws Exception {
+    public void setInputSpatialization(boolean isSpatial) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        IsSpatial = isSpatial;
+        InputIsSpatial = isSpatial;
 
     }
 
-    public void setUsage(String usage) throws Exception {
+    public void setOutputSpatialization(boolean isSpatial) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        OutputIsSpatial = isSpatial;
+
+    }
+
+    public void setInputUsage(String usage) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -340,7 +457,21 @@ public final class Stream {
             throw new Exception("Not a valid audio API");
         }
 
-        iUsage = usage;
+        InputUsage = usage;
+
+    }
+
+    public void setOutputUsage(String usage) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(!ObjectMatch(usage, new String[]{Usage.Alarm, Usage.AssistanceAccessibility, Usage.VoiceCommunicationSignalling, Usage.Notification, Usage.AssistanceNavigationGuidance, Usage.Assistant, Usage.AssistanceSonification, Usage.Game, Usage.Media, Usage.NotificationRingtone, Usage.VoiceCommunication, Usage.NotificationEvent})){
+            throw new Exception("Not a valid audio API");
+        }
+
+        OutputUsage = usage;
 
     }
 
