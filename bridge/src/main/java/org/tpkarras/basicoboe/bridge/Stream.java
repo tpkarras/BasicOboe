@@ -46,6 +46,9 @@ public final class Stream {
     private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String format, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
     private native void deviceTerminate();
     private native float[] readInput();
+    private native int[] getSampleRate();
+    private native int[] getChannelCount();
+    private native int[] getDeviceId();
 
     private native void writeOutput(float[] output);
 
@@ -178,6 +181,33 @@ public final class Stream {
         }
 
         writeOutput(samples);
+
+    }
+
+    public int[] getSampleRates() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        return getSampleRate();
+
+    }
+
+    public int[] getChannelCounts() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        return getChannelCount();
+
+    }
+
+    public int[] getDeviceIds() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        return getDeviceId();
 
     }
 

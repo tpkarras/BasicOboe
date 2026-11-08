@@ -17,35 +17,51 @@ std::unique_ptr<oboe::FifoBuffer> Fifo::inputFifo;
 std::unique_ptr<oboe::FifoBuffer> Fifo::outputFifo;
 bool duplex = false;
 
-JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject thiz, jstring packageName, jstring attributionTag, jint deviceIDInput, jint deviceIDOutput, jstring format, jint inputSampleRate, jint outputSampleRate, jint inputChannels, jint outputChannels, jint inputChannelMask, jint outputChannelMask, jstring audioAPI, jstring performanceMode, jboolean sharingMode, jint framesPerCallback, jboolean inputIsSpatial, jboolean outputIsSpatial, jstring inputUsage, jstring outputUsage){
+JNIEXPORT void JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
+                                                           jstring packageName,
+                                                           jstring attributionTag,
+                                                           jint deviceIDInput, jint deviceIDOutput,
+                                                           jstring format, jint inputSampleRate,
+                                                           jint outputSampleRate,
+                                                           jint inputChannels, jint outputChannels,
+                                                           jint inputChannelMask,
+                                                           jint outputChannelMask, jstring audioAPI,
+                                                           jstring performanceMode,
+                                                           jboolean sharingMode,
+                                                           jint framesPerCallback,
+                                                           jboolean inputIsSpatial,
+                                                           jboolean outputIsSpatial,
+                                                           jstring inputUsage,
+                                                           jstring outputUsage) {
     std::lock_guard<std::mutex> lock(mStreamMutex);
     oboe::AudioStreamBuilder instance;
 
     std::vector<int> instanceTasks = {};
 
-    if(deviceIDOutput > 0){
+    if (deviceIDOutput > 0) {
         instanceTasks.push_back(0);
     }
 
-    if(deviceIDInput > 0){
+    if (deviceIDInput > 0) {
         instanceTasks.push_back(1);
     }
 
-    for(int current : instanceTasks) {
+    for (int current: instanceTasks) {
 
         int sampleRate;
         int channels;
         int channelMask;
-        char * currentType;
+        char *currentType;
         std::string target = JNITools::stringCheckNConvert(env, format);
 
         if (instanceTasks.size() == 2 && current == 0 || instanceTasks.size() == 1) {
-            if(current == 0){
-                currentType = (char *)"Output";
+            if (current == 0) {
+                currentType = (char *) "Output";
                 instance.setDeviceId(deviceIDOutput);
                 instance.setDirection(oboe::Direction::Output);
-            } else if(current == 1){
-                currentType = (char *)"Input";
+            } else if (current == 1) {
+                currentType = (char *) "Input";
                 instance.setDeviceId(deviceIDInput);
                 instance.setDirection(oboe::Direction::Input);
             }
@@ -79,38 +95,41 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitializ
                 }
             }
 
-            if(current == 0) {
+            if (current == 0) {
                 sampleRate = outputSampleRate;
             } else {
                 sampleRate = inputSampleRate;
             }
 
             if (sampleRate > 0) {
-                __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Sample Rate", currentType);
+                __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Sample Rate",
+                                    currentType);
                 instance.setSampleRate(static_cast<int32_t>(sampleRate));
             }
 
         }
 
-        if(current == 0) {
+        if (current == 0) {
             channels = outputChannels;
         } else {
             channels = inputChannels;
         }
 
         if (channels > 0) {
-            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Channel Count", currentType);
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Channel Count",
+                                currentType);
             instance.setChannelCount(channels);
         }
 
-        if(current == 0) {
+        if (current == 0) {
             channelMask = outputChannelMask;
         } else {
             channelMask = inputChannelMask;
         }
 
         if (channelMask > 0) {
-            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Channel Mask", currentType);
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Channel Mask",
+                                currentType);
             instance.setChannelMask(static_cast<oboe::ChannelMask>(channelMask));
         }
 
@@ -151,7 +170,8 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitializ
         }
 
         if (current == 0 && inputIsSpatial || current == 1 && outputIsSpatial) {
-            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Spatialization Flag", currentType);
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Spatialization Flag",
+                                currentType);
             instance.setIsContentSpatialized(true);
         }
 
@@ -239,7 +259,8 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitializ
         }
 
         if (instanceTasks.size() == 2 && current == 1) {
-            instance.setBufferCapacityInFrames(BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * 2);
+            instance.setBufferCapacityInFrames(
+                    BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * 2);
         }
 
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Opening stream");
@@ -302,7 +323,7 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitializ
 
     }
 
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Starting stream");
+    __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Starting stream");
 
     if (instanceTasks.size() == 1) {
         oboe::Result result = BasicOboeEngine::stream->requestStart();
@@ -329,11 +350,12 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitializ
         duplex = true;
 
     }
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Success starting stream");
+    __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Success starting stream");
 
 }
 
-JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate(JNIEnv *env, jobject thiz) {
+JNIEXPORT void JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate(JNIEnv *env, jobject thiz) {
     __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Closing stream");
     if (!duplex) {
         BasicOboeEngine::stream->requestStop();
@@ -346,22 +368,23 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate
         BasicOboeDuplexEngine::outputStream->close();
         BasicOboeDuplexEngine::outputStream.reset();
     }
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Successfully closed stream");
+    __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Successfully closed stream");
 
 }
 
-JNIEXPORT jfloatArray JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
+JNIEXPORT jfloatArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
     int32_t channelCount;
     int32_t totalSamples;
     int32_t framesPerBurst;
-if(!duplex){
-    channelCount = BasicOboeEngine::stream->getChannelCount();
-    framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
-} else {
-    channelCount = BasicOboeDuplexEngine::inputStream->getChannelCount();
-    framesPerBurst = BasicOboeDuplexEngine::inputStream->getFramesPerBurst();
-}
-totalSamples = framesPerBurst * channelCount;
+    if (!duplex) {
+        channelCount = BasicOboeEngine::stream->getChannelCount();
+        framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
+    } else {
+        channelCount = BasicOboeDuplexEngine::inputStream->getChannelCount();
+        framesPerBurst = BasicOboeDuplexEngine::inputStream->getFramesPerBurst();
+    }
+    totalSamples = framesPerBurst * channelCount;
 
     jfloatArray resultJava = env->NewFloatArray(totalSamples);
     std::vector<float> tempBuffer(totalSamples);
@@ -370,15 +393,17 @@ totalSamples = framesPerBurst * channelCount;
     jfloat *resultRawEntry = tempBuffer.data();
     env->SetFloatArrayRegion(resultJava, 0, totalSamples, resultRawEntry);
 
-    return (jfloatArray)resultJava;
+    return (jfloatArray) resultJava;
 
 }
 
-JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz, jfloatArray output) {
+JNIEXPORT void JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
+                                                      jfloatArray output) {
     int32_t channelCount;
     int32_t totalSamples;
     int32_t framesPerBurst;
-    if(!duplex){
+    if (!duplex) {
         channelCount = BasicOboeEngine::stream->getChannelCount();
         framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
     } else {
@@ -392,6 +417,49 @@ JNIEXPORT void JNICALL Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNI
     env->GetFloatArrayRegion(output, 0, totalSamples, tempBuffer.data());
 
     Fifo::outputFifo->write(tempBuffer.data(), framesPerBurst);
+
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thiz) {
+    jint *tempBuffer;
+    if (!duplex) {
+        tempBuffer[0] = BasicOboeEngine::stream->getSampleRate();
+    } else {
+        tempBuffer[0] = BasicOboeDuplexEngine::inputStream->getSampleRate();
+        tempBuffer[1] = BasicOboeDuplexEngine::outputStream->getSampleRate();
+    }
+
+    return reinterpret_cast<jintArray>(tempBuffer);
+
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject thiz) {
+    jint *tempBuffer;
+    if (!duplex) {
+        tempBuffer[0] = BasicOboeEngine::stream->getChannelCount();
+    } else {
+        jfloatArray resultJava = env->NewFloatArray(2);
+        tempBuffer[0] = BasicOboeDuplexEngine::inputStream->getChannelCount();
+        tempBuffer[1] = BasicOboeDuplexEngine::outputStream->getChannelCount();
+    }
+
+    return reinterpret_cast<jintArray>(tempBuffer);
+
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
+    jint *id;
+    if (!duplex) {
+        id[0] = BasicOboeEngine::stream->getDeviceId();
+    } else {
+        id[0] = BasicOboeDuplexEngine::inputStream->getDeviceId();
+        id[1] = BasicOboeDuplexEngine::outputStream->getDeviceId();
+    }
+
+    return reinterpret_cast<jintArray>(id);
 
 }
 
