@@ -150,6 +150,7 @@ public final class Stream {
     initialized = true;
     }
 
+    @Nullable
     public float[] getInput() throws Exception {
 
         if(!initialized){
@@ -160,7 +161,16 @@ public final class Stream {
             throw new Exception("Stream is not a input");
         }
 
-        return readInput();
+        float[] input;
+        try {
+            input = readInput();
+        } catch(Exception e){
+            this.terminate();
+            return null;
+        }
+
+        return input;
+
     }
 
     public void sendOutput(float[] samples) throws Exception {
@@ -173,34 +183,66 @@ public final class Stream {
             throw new Exception("Stream is not a output");
         }
 
-        writeOutput(samples);
+        try {
+            writeOutput(samples);
+        } catch (Exception e){
+            this.terminate();
+        }
 
     }
 
+    @Nullable
     public int[] getSampleRates() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        return getSampleRate();
+        int[] sampleRates;
+        try {
+            sampleRates = getSampleRate();
+        } catch(Exception e){
+            this.terminate();
+            return null;
+        }
+
+        return sampleRates;
 
     }
 
+    @Nullable
     public int[] getChannelCounts() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        return getChannelCount();
+        int[] channelCounts;
+
+        try {
+            channelCounts = getChannelCount();
+        } catch(Exception e){
+            this.terminate();
+            return null;
+        }
+
+        return channelCounts;
 
     }
 
+    @Nullable
     public int[] getDeviceIds() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        return getDeviceId();
+        int[] deviceIds;
+        try {
+            deviceIds = getDeviceId();
+        } catch(Exception e){
+            this.terminate();
+            return null;
+        }
+
+        return deviceIds;
 
     }
 
