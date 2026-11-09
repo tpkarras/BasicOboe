@@ -603,7 +603,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject t
                                          "Stream closed");
             return jintArray(nullptr);
         }
-        jfloatArray resultJava = env->NewFloatArray(2);
+
         tempBuffer[0] = BasicOboeDuplexEngine::inputStream->getChannelCount();
         tempBuffer[1] = BasicOboeDuplexEngine::outputStream->getChannelCount();
     }
