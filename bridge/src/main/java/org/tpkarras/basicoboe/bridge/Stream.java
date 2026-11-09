@@ -186,7 +186,9 @@ public final class Stream {
         try {
             writeOutput(samples);
         } catch (Exception e){
-            this.terminate();
+            if(initialized){
+                this.terminate();
+            }
         }
 
     }
@@ -201,7 +203,9 @@ public final class Stream {
         try {
             sampleRates = getSampleRate();
         } catch(Exception e){
-            this.terminate();
+            if(initialized){
+                this.terminate();
+            }
             return null;
         }
 
@@ -220,7 +224,9 @@ public final class Stream {
         try {
             channelCounts = getChannelCount();
         } catch(Exception e){
-            this.terminate();
+            if(initialized){
+                this.terminate();
+            }
             return null;
         }
 
@@ -238,7 +244,9 @@ public final class Stream {
         try {
             deviceIds = getDeviceId();
         } catch(Exception e){
-            this.terminate();
+            if(initialized){
+                this.terminate();
+            }
             return null;
         }
 
