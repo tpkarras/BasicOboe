@@ -372,7 +372,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate(JNIEnv *env, jobject t
 
 }
 
-JNIEXPORT jfloatArray JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
     int32_t channelCount;
     int32_t totalSamples;
@@ -381,7 +381,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
         if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jfloatArray(nullptr);
+            return jobject(nullptr);
         }
         channelCount = BasicOboeEngine::stream->getChannelCount();
         framesPerBurst = BasicOboeEngine::stream->getFramesPerBurst();
@@ -389,27 +389,78 @@ Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
         if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jfloatArray(nullptr);
+            return jobject(nullptr);
         }
         channelCount = BasicOboeDuplexEngine::inputStream->getChannelCount();
         framesPerBurst = BasicOboeDuplexEngine::inputStream->getFramesPerBurst();
     }
     totalSamples = framesPerBurst * channelCount;
 
-    jfloatArray resultJava = env->NewFloatArray(totalSamples);
-    std::vector<float> tempBuffer(totalSamples);
-    Fifo::inputFifo->read(tempBuffer.data(), framesPerBurst);
+    oboe::AudioFormat format;
 
-    jfloat *resultRawEntry = tempBuffer.data();
-    env->SetFloatArrayRegion(resultJava, 0, totalSamples, resultRawEntry);
+    if(!duplex){
+        format = BasicOboeEngine::stream->getFormat();
+    } else {
+        format = BasicOboeDuplexEngine::inputStream->getFormat();
+    }
 
-    return (jfloatArray) resultJava;
+    if(format == oboe::AudioFormat::Float) {
+        std::vector<float*> tempBuffer(totalSamples);
+        Fifo::inputFifo->read(tempBuffer.data(), framesPerBurst);
 
+        jobject resultJava = env->NewDirectByteBuffer(tempBuffer.data(), totalSamples * sizeof(float));
+
+        if (!resultJava) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Allocation failed");
+            return nullptr;
+        }
+
+        return resultJava;
+    } else if(format == oboe::AudioFormat::I32) {
+        std::vector<int32_t*> tempBuffer(totalSamples);
+        Fifo::inputFifo->read(tempBuffer.data(), framesPerBurst);
+
+        jobject resultJava = env->NewDirectByteBuffer(tempBuffer.data(), totalSamples * sizeof(int32_t));
+
+        if (!resultJava) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Allocation failed");
+            return nullptr;
+        }
+
+        return resultJava;
+    } else if(format == oboe::AudioFormat::I16) {
+        std::vector<int16_t*> tempBuffer(totalSamples);
+        Fifo::inputFifo->read(tempBuffer.data(), framesPerBurst);
+
+        jobject resultJava = env->NewDirectByteBuffer(tempBuffer.data(), totalSamples * sizeof(int16_t));
+
+        if (!resultJava) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Allocation failed");
+            return nullptr;
+        }
+
+        return resultJava;
+    } else {
+        std::vector<uint8_t*> tempBuffer(totalSamples);
+        Fifo::inputFifo->read(tempBuffer.data(), framesPerBurst);
+
+        jobject resultJava = env->NewDirectByteBuffer(tempBuffer.data(), totalSamples * sizeof(uint8_t));
+
+        if (!resultJava) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Allocation failed");
+            return nullptr;
+        }
+
+        return resultJava;
+    }
 }
 
 JNIEXPORT void JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
-                                                      jfloatArray output) {
+Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz, jobject output) {
     int32_t channelCount;
     int32_t totalSamples;
     int32_t framesPerBurst;
@@ -432,11 +483,23 @@ Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
     }
     totalSamples = framesPerBurst * channelCount;
 
-    std::vector<float> tempBuffer(totalSamples);
+    oboe::AudioFormat format;
 
-    env->GetFloatArrayRegion(output, 0, totalSamples, tempBuffer.data());
+    if(!duplex){
+        format = BasicOboeEngine::stream->getFormat();
+    } else {
+        format = BasicOboeDuplexEngine::inputStream->getFormat();
+    }
 
-    Fifo::outputFifo->write(tempBuffer.data(), framesPerBurst);
+    if(format == oboe::AudioFormat::Float){
+        Fifo::outputFifo->write(static_cast<float *>(env->GetDirectBufferAddress(output)), framesPerBurst);
+    } else if(format == oboe::AudioFormat::I32){
+        Fifo::outputFifo->write(static_cast<int32_t *>(env->GetDirectBufferAddress(output)), framesPerBurst);
+    } else if(format == oboe::AudioFormat::I16){
+        Fifo::outputFifo->write(static_cast<int16_t *>(env->GetDirectBufferAddress(output)), framesPerBurst);
+    } else {
+        Fifo::outputFifo->write(static_cast<uint8_t *>(env->GetDirectBufferAddress(output)), framesPerBurst);
+    }
 
 }
 
@@ -514,63 +577,54 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz)
 }
 
 
-JNIEXPORT jobjectArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
-    std::vector<oboe::AudioFormat> formats;
-    jobjectArray result;
+JNIEXPORT jstring JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getFormati(JNIEnv *env, jobject thiz) {
+    oboe::AudioFormat format;
     if (!duplex) {
         if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jobjectArray(nullptr);
+            return jstring(nullptr);
         }
-        formats[0] = BasicOboeEngine::stream->getFormat();
+        format = BasicOboeEngine::stream->getFormat();
     } else {
         if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed || BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed ){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jobjectArray(nullptr);
+            return jstring(nullptr);
         }
-        formats[0] = BasicOboeDuplexEngine::inputStream->getFormat();
-        formats[1] = BasicOboeDuplexEngine::outputStream->getFormat();
+        format = BasicOboeDuplexEngine::inputStream->getFormat();
     }
 
-    int index = 0;
-
-    for (oboe::AudioFormat format : formats){
         if((oboe::AudioFormat)format == oboe::AudioFormat::Float){
-            env->SetObjectArrayElement(result, index, (jobject) "Float");
+            return (jstring)"Float";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::I16){
-            env->SetObjectArrayElement(result, index, (jobject) "I16");
+            return (jstring)"I16";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::I24){
-            env->SetObjectArrayElement(result, index, (jobject) "I24");
+            return (jstring)"I24";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::I32){
-            env->SetObjectArrayElement(result, index, (jobject) "I32");
+            return (jstring)"I32";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_ELD){
-            env->SetObjectArrayElement(result, index, (jobject) "AAC_ELD");
+            return (jstring)"AAC_ELD";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_HE_V1){
-            env->SetObjectArrayElement(result, index, (jobject) "AAC_HE_V1");
+            return (jstring)"AAC_HE_V1";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_HE_V2){
-            env->SetObjectArrayElement(result, index, (jobject) "AAC_HE_V2");
+            return (jstring)"AAC_HE_V2";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_LC){
-            env->SetObjectArrayElement(result, index, (jobject) "AAC_LC");
+            return (jstring)"AAC_LC";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::IEC61937){
-            env->SetObjectArrayElement(result, index, (jobject) "IEC61937");
+            return (jstring)"IEC61937";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_XHE){
-            env->SetObjectArrayElement(result, index, (jobject) "AAC_XHE");
+            return (jstring)"AAC_XHE";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::OPUS){
-            env->SetObjectArrayElement(result, index, (jobject) "OPUS");
+            return (jstring)"OPUS";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::MP3){
-            env->SetObjectArrayElement(result, index, (jobject) "MP3");
+            return (jstring)"MP3";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::Invalid){
-            env->SetObjectArrayElement(result, index, (jobject) "Invalid");
+            return (jstring)"Invalid";
         } else if((oboe::AudioFormat)format == oboe::AudioFormat::Unspecified){
-            env->SetObjectArrayElement(result, index, (jobject) "Unspecified");
+            return (jstring)"Unspecified";
         }
-        index++;
-    }
-
-    return result;
 
 }
 

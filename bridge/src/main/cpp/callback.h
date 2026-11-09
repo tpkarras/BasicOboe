@@ -12,18 +12,50 @@ class BasicOboeEngine : public oboe::AudioStreamDataCallback {
                 void *audioData,
                 int32_t numFrames
         ) override {
-            auto *floatData = static_cast<float*>(audioData);
+oboe::AudioFormat format = audioStream->getFormat();
+int32_t framesRead = 0;
 
-            if(audioStream->getDirection() == oboe::Direction::Input){
-                Fifo::inputFifo->write(floatData, numFrames);
+            if (format == oboe::AudioFormat::Float) {
+                if (audioStream->getDirection() == oboe::Direction::Input) {
+                    Fifo::inputFifo->write(static_cast<float *>(audioData), numFrames);
+                } else {
+                    framesRead = Fifo::outputFifo->read(static_cast<float *>(audioData), numFrames);
+                }
+            } else if (format == oboe::AudioFormat::I16) {
+                if (audioStream->getDirection() == oboe::Direction::Input) {
+                    Fifo::inputFifo->write(static_cast<int16_t *>(audioData), numFrames);
+                } else {
+                    framesRead = Fifo::outputFifo->read(static_cast<int16_t *>(audioData), numFrames);
+                }
+            } else if (format == oboe::AudioFormat::I32) {
+                if (audioStream->getDirection() == oboe::Direction::Input) {
+                    Fifo::inputFifo->write(static_cast<int32_t*>(audioData), numFrames);
+                } else {
+                    framesRead = Fifo::outputFifo->read(static_cast<int32_t*>(audioData), numFrames);
+                }
             } else {
-                int32_t framesRead = Fifo::outputFifo->read(floatData, numFrames);
-
-                if (framesRead < numFrames) {
-                    std::fill_n(floatData + (framesRead * audioStream->getChannelCount()),
-                                (numFrames - framesRead) * audioStream->getChannelCount(), 0.0f);
+                if (audioStream->getDirection() == oboe::Direction::Input) {
+                    Fifo::inputFifo->write(static_cast<uint8_t*>(audioData), numFrames);
+                } else {
+                    framesRead = Fifo::outputFifo->read(static_cast<uint8_t*>(audioData), numFrames);
                 }
             }
+
+                if (framesRead < numFrames) {
+                    if (format == oboe::AudioFormat::Float) {
+                    std::fill_n(static_cast<float *>(audioData) + (framesRead * audioStream->getChannelCount()),
+                                (numFrames - framesRead) * audioStream->getChannelCount(), 0.0f);
+                    } else if (format == oboe::AudioFormat::I16) {
+                        std::fill_n(static_cast<int16_t*>(audioData) + (framesRead * audioStream->getChannelCount()),
+                                    (numFrames - framesRead) * audioStream->getChannelCount(), 0);
+                    } else if (format == oboe::AudioFormat::I32) {
+                        std::fill_n(static_cast<int32_t*>(audioData) + (framesRead * audioStream->getChannelCount()),
+                                    (numFrames - framesRead) * audioStream->getChannelCount(), 0);
+                    } else {
+                        std::fill_n(static_cast<uint8_t*>(audioData) + (framesRead * audioStream->getChannelCount()),
+                                    (numFrames - framesRead) * audioStream->getChannelCount(), 0);
+                    }
+                }
 
             return oboe::DataCallbackResult::Continue;
         }
@@ -39,19 +71,52 @@ public:
             void *outputData,
             int numOutputFrames
     ) override {
+        oboe::AudioFormat inputFormat = inputStream->getFormat();
+        oboe::AudioFormat outputFormat = outputStream->getFormat();
+        int32_t framesRead = 0;
+        if (inputFormat == oboe::AudioFormat::Float) {
+            Fifo::inputFifo->write(static_cast<const float*>(inputData), numInputFrames);
+        } else if (inputFormat == oboe::AudioFormat::I16) {
+            Fifo::inputFifo->write(static_cast<const int16_t*>(inputData), numInputFrames);
+        } else if (inputFormat == oboe::AudioFormat::I32) {
+            Fifo::inputFifo->write(static_cast<const int32_t*>(inputData), numInputFrames);
+        } else {
+            Fifo::inputFifo->write(static_cast<const uint8_t*>(inputData), numInputFrames);
+        }
 
-        // Example: Pass-through (copy input to output)
-        // Note: Ensure your data formats (e.g., Float vs Int16) match what you built.
-        const float *audioIn = static_cast<const float*>(inputData);
-        float *audioOut = static_cast<float*>(outputData);
-
-            Fifo::inputFifo->write(audioIn, numInputFrames);
-            int32_t framesRead = Fifo::outputFifo->write(audioOut, numOutputFrames);
+        if (inputFormat == oboe::AudioFormat::Float) {
+            framesRead = Fifo::outputFifo->write(static_cast<float*>(outputData), numOutputFrames);
 
             if (framesRead < numOutputFrames) {
-                std::fill_n(audioOut + (framesRead * outputStream->getChannelCount()),
+                std::fill_n(static_cast<float*>(outputData) +
+                            (framesRead * outputStream->getChannelCount()),
                             (numOutputFrames - framesRead) * outputStream->getChannelCount(), 0.0f);
             }
+        } else if (inputFormat == oboe::AudioFormat::I16) {
+            framesRead = Fifo::outputFifo->write(static_cast<int16_t*>(outputData), numOutputFrames);
+
+            if (framesRead < numOutputFrames) {
+                std::fill_n(static_cast<int16_t*>(outputData) +
+                            (framesRead * outputStream->getChannelCount()),
+                            (numOutputFrames - framesRead) * outputStream->getChannelCount(), 0);
+            }
+        } else if (inputFormat == oboe::AudioFormat::I32) {
+            framesRead = Fifo::outputFifo->write(static_cast<int32_t*>(outputData), numOutputFrames);
+
+            if (framesRead < numOutputFrames) {
+                std::fill_n(static_cast<int32_t*>(outputData) +
+                            (framesRead * outputStream->getChannelCount()),
+                            (numOutputFrames - framesRead) * outputStream->getChannelCount(), 0);
+            }
+        } else {
+            framesRead = Fifo::outputFifo->write(static_cast<uint8_t*>(outputData), numOutputFrames);
+
+            if (framesRead < numOutputFrames) {
+                std::fill_n(static_cast<uint8_t*>(outputData) +
+                            (framesRead * outputStream->getChannelCount()),
+                            (numOutputFrames - framesRead) * outputStream->getChannelCount(), 0);
+            }
+        }
 
         return oboe::DataCallbackResult::Continue; // Keep the stream running
     }

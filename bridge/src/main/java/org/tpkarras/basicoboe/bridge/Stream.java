@@ -13,6 +13,8 @@ import org.tpkarras.basicoboe.bridge.constants.PerformanceMode;
 import org.tpkarras.basicoboe.bridge.constants.SampleRate;
 import org.tpkarras.basicoboe.bridge.constants.Usage;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -42,13 +44,13 @@ public final class Stream {
     private String OutputUsage;
     private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String format, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
     private native void deviceTerminate();
-    private native float[] readInput();
+    private native ByteBuffer readInput();
     private native int[] getSampleRate();
     private native int[] getChannelCount();
     private native int[] getDeviceId();
-    private native String[] getFormat();
+    private native String getFormati();
 
-    private native void writeOutput(float[] output);
+    private native void writeOutput(ByteBuffer output);
 
     private boolean ObjectMatch(@NonNull Object check, @NonNull Object[] checkAgainst) throws Exception {
 
@@ -152,7 +154,7 @@ public final class Stream {
     }
 
     @Nullable
-    public float[] getInput() throws Exception {
+    public ByteBuffer getInput() throws Exception {
 
         if(!initialized){
             throw new Exception("Audio device not initialized");
@@ -162,19 +164,22 @@ public final class Stream {
             throw new Exception("Stream is not a input");
         }
 
-        float[] input;
+        ByteBuffer input;
         try {
             input = readInput();
         } catch(Exception e){
-            this.terminate();
+            if(initialized) {
+                this.terminate();
+            }
             return null;
         }
 
+        input.order(ByteOrder.nativeOrder());
         return input;
 
     }
 
-    public void sendOutput(float[] samples) throws Exception {
+    public void sendOutput(ByteBuffer samples) throws Exception {
 
         if(!initialized){
             throw new Exception("Audio device not initialized");
@@ -256,14 +261,14 @@ public final class Stream {
     }
 
     @Nullable
-    public String[] getFormats() throws Exception {
+    public String getFormat() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        String[] formats;
+        String format;
         try {
-            formats = getFormat();
+            format = getFormati();
         } catch(Exception e){
             if(initialized){
                 this.terminate();
@@ -271,7 +276,7 @@ public final class Stream {
             return null;
         }
 
-        return formats;
+        return format;
 
     }
 
