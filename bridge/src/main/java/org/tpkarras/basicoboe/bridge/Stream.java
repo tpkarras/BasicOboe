@@ -46,6 +46,7 @@ public final class Stream {
     private native int[] getSampleRate();
     private native int[] getChannelCount();
     private native int[] getDeviceId();
+    private native String[] getFormat();
 
     private native void writeOutput(float[] output);
 
@@ -251,6 +252,26 @@ public final class Stream {
         }
 
         return deviceIds;
+
+    }
+
+    @Nullable
+    public String[] getFormats() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        String[] formats;
+        try {
+            formats = getFormat();
+        } catch(Exception e){
+            if(initialized){
+                this.terminate();
+            }
+            return null;
+        }
+
+        return formats;
 
     }
 
