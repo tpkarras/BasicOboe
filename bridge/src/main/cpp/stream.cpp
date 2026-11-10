@@ -747,7 +747,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getChannelMask(JNIEnv *env, jobject thiz) {
-    jint *channelMask;
+    jint *channelMask = nullptr;
 
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
