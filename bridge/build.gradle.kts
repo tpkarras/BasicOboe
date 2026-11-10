@@ -1,5 +1,18 @@
 plugins {
+    id("maven-publish")
     alias(libs.plugins.android.library)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register<MavenPublication>("release") {
+                groupId = "org.tpkarras"
+                artifactId = "BasicOboe"
+                version = "0.0.1"
+            }
+        }
+    }
 }
 
 android {
