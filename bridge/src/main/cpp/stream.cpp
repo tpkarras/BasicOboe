@@ -19,7 +19,7 @@ std::unique_ptr<oboe::FifoBuffer> Fifo::outputFifo;
 bool duplex = false;
 
 JNIEXPORT void JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
+Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
                                                            jstring packageName,
                                                            jstring attributionTag,
                                                            jint deviceIDInput, jint deviceIDOutput,
@@ -472,7 +472,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_deviceTerminate(JNIEnv *env, jobject thiz) {
     __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Closing stream");
     if (!duplex) {
         BasicOboeEngine::stream->requestStop();
@@ -490,7 +490,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceTerminate(JNIEnv *env, jobject t
 }
 
 JNIEXPORT jobject JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_readInput(JNIEnv *env, jobject thiz) {
     int32_t channelCount;
     int32_t totalSamples;
     int32_t framesPerBurst;
@@ -581,7 +581,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_readInput(JNIEnv *env, jobject thiz) {
 }
 
 JNIEXPORT void JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz, jobject output) {
+Java_org_tpkarras_basicoboe_Stream_writeOutput(JNIEnv *env, jobject thiz, jobject output) {
     int32_t channelCount;
     int32_t totalSamples;
     int32_t framesPerBurst;
@@ -629,7 +629,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getSampleRate(JNIEnv *env, jobject thiz) {
     jint *tempBuffer = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
@@ -654,7 +654,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thi
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getChannelCount(JNIEnv *env, jobject thiz) {
     jint *tempBuffer = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
@@ -680,7 +680,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject t
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
     jint *id = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
@@ -706,7 +706,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz)
 
 
 JNIEXPORT jobjectArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getFormat(JNIEnv *env, jobject thiz) {
     std::vector<oboe::AudioFormat> formats;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
@@ -746,7 +746,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getChannelMask(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getChannelMask(JNIEnv *env, jobject thiz) {
     jint *channelMask = nullptr;
 
     if (!duplex) {
@@ -774,7 +774,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getChannelMask(JNIEnv *env, jobject th
 }
 extern "C"
 JNIEXPORT jbooleanArray JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getSharingMode(JNIEnv *env, jobject thiz) {
+Java_org_tpkarras_basicoboe_Stream_getSharingMode(JNIEnv *env, jobject thiz) {
 jboolean *sharingMode = nullptr;
 jbooleanArray result;
 

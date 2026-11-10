@@ -25,7 +25,7 @@ afterEvaluate {
 }
 
 android {
-    namespace = "org.tpkarras.basicoboe.bridge"
+    namespace = "org.tpkarras.basicoboe"
     compileSdk {
         version = release(37)
     }
