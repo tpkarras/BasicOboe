@@ -51,6 +51,8 @@ public final class Stream {
     private native int[] getDeviceId();
     private native String[] getFormat();
 
+    private native int[] getChannelMask();
+
     private native void writeOutput(ByteBuffer output);
 
     private boolean ObjectMatch(@NonNull Object check, @NonNull Object[] checkAgainst) throws Exception {
@@ -244,6 +246,27 @@ public final class Stream {
     }
 
     @Nullable
+    public int[] getChannelMasks() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        int[] channelMasks;
+
+        try {
+            channelMasks = getChannelMask();
+        } catch(Exception e){
+            if(initialized){
+                this.terminate();
+            }
+            return null;
+        }
+
+        return channelMasks;
+
+    }
+
+    @Nullable
     public int[] getDeviceIds() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
@@ -289,6 +312,10 @@ public final class Stream {
             throw new Exception("Audio device already initialized");
         }
 
+        if(inputDevice == 0){
+            throw new Exception("Audio device not an input device");
+        }
+
         if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
             throw new Exception("Not a valid audio API");
         }
@@ -301,6 +328,10 @@ public final class Stream {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
+        }
+
+        if(outputDevice == 0){
+            throw new Exception("Audio device not an input device");
         }
 
         if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
