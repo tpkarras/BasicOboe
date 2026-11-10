@@ -588,7 +588,7 @@ public final class Stream {
 
     }
 
-    public void setInputSharinMode(boolean mode) throws Exception{
+    public void setInputSharingMode(boolean mode) throws Exception{
 
         if(initialized){
             throw new Exception("Audio device already initialized");
