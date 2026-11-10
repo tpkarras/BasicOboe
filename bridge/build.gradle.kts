@@ -6,10 +6,12 @@ plugins {
 afterEvaluate {
     publishing {
         publications {
-            register<MavenPublication>("release") {
+            register<MavenPublication>("debug") {
                 groupId = "org.tpkarras"
                 artifactId = "BasicOboe"
                 version = "0.0.1"
+
+                from(components["debug"])
             }
         }
     }
@@ -47,12 +49,18 @@ android {
         }
     }
 
+    publishing {
+        singleVariant("release")
+        singleVariant("debug") {
+            withSourcesJar()
+        }
+    }
+
 }
 
 dependencies {
     implementation("com.google.oboe:oboe:1.11.0")
     implementation(libs.appcompat)
-    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
