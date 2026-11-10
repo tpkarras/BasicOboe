@@ -309,6 +309,26 @@ public final class Stream {
 
     }
 
+    @Nullable
+    public boolean[] getSharingModes() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        boolean[] sharingModes;
+        try {
+            sharingModes = getSharingMode();
+        } catch(Exception e){
+            if(initialized){
+                this.terminate();
+            }
+            return null;
+        }
+
+        return sharingModes;
+
+    }
+
     public void setInputFormat(@NonNull String format) throws Exception {
 
         if(initialized){
