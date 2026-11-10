@@ -8,10 +8,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.tpkarras.basicoboe.bridge.constants.AudioAPIs;
-import org.tpkarras.basicoboe.bridge.constants.PerformanceMode;
-import org.tpkarras.basicoboe.bridge.constants.SampleRate;
-import org.tpkarras.basicoboe.bridge.constants.Usage;
+import org.tpkarras.basicoboe.constants.AudioAPIs;
+import org.tpkarras.basicoboe.constants.PerformanceMode;
+import org.tpkarras.basicoboe.constants.SampleRate;
+import org.tpkarras.basicoboe.constants.Usage;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -339,7 +339,7 @@ public final class Stream {
             throw new Exception("Audio device not an input device");
         }
 
-        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
+        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.constants.Format.I16, org.tpkarras.basicoboe.constants.Format.Float, org.tpkarras.basicoboe.constants.Format.I24, org.tpkarras.basicoboe.constants.Format.I32, org.tpkarras.basicoboe.constants.Format.IEC61937, org.tpkarras.basicoboe.constants.Format.MP3, org.tpkarras.basicoboe.constants.Format.AAC_LC, org.tpkarras.basicoboe.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.constants.Format.AAC_ELD, org.tpkarras.basicoboe.constants.Format.AAC_XHE, org.tpkarras.basicoboe.constants.Format.OPUS})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -357,7 +357,7 @@ public final class Stream {
             throw new Exception("Audio device not an output device");
         }
 
-        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
+        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.constants.Format.I16, org.tpkarras.basicoboe.constants.Format.Float, org.tpkarras.basicoboe.constants.Format.I24, org.tpkarras.basicoboe.constants.Format.I32, org.tpkarras.basicoboe.constants.Format.IEC61937, org.tpkarras.basicoboe.constants.Format.MP3, org.tpkarras.basicoboe.constants.Format.AAC_LC, org.tpkarras.basicoboe.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.constants.Format.AAC_ELD, org.tpkarras.basicoboe.constants.Format.AAC_XHE, org.tpkarras.basicoboe.constants.Format.OPUS})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -473,13 +473,13 @@ public final class Stream {
             throw new Exception("Audio device not an input device");
         }
 
-        if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.bridge.constants.ChannelMask.Stereo) {
+        if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.constants.ChannelMask.Stereo) {
 
             InputChannelMask = channelMasks[0];
 
         } else {
 
-            int[] masks = {org.tpkarras.basicoboe.bridge.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideRight};
+            int[] masks = {org.tpkarras.basicoboe.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.constants.ChannelMask.SideRight};
             int tempChannelMask = 0;
             ArrayList<Integer> used = new ArrayList<>();
 
@@ -531,13 +531,13 @@ public final class Stream {
             throw new Exception("Audio device not an output device");
         }
 
-        if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.bridge.constants.ChannelMask.Stereo) {
+        if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.constants.ChannelMask.Stereo) {
 
             OutputChannelMask = channelMasks[0];
 
         } else {
 
-            int[] masks = {org.tpkarras.basicoboe.bridge.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.bridge.constants.ChannelMask.SideRight};
+            int[] masks = {org.tpkarras.basicoboe.constants.ChannelMask.Unspecified, org.tpkarras.basicoboe.constants.ChannelMask.FrontLeft, org.tpkarras.basicoboe.constants.ChannelMask.FrontRight, org.tpkarras.basicoboe.constants.ChannelMask.FrontCenter, org.tpkarras.basicoboe.constants.ChannelMask.LowFrequency, org.tpkarras.basicoboe.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.constants.ChannelMask.BackLeft, org.tpkarras.basicoboe.constants.ChannelMask.BackRight, org.tpkarras.basicoboe.constants.ChannelMask.FrontLeftOfCenter, org.tpkarras.basicoboe.constants.ChannelMask.FrontRightOfCenter, org.tpkarras.basicoboe.constants.ChannelMask.BackCenter, org.tpkarras.basicoboe.constants.ChannelMask.SideLeft, org.tpkarras.basicoboe.constants.ChannelMask.SideRight};
             int tempChannelMask = 0;
             ArrayList<Integer> used = new ArrayList<>();
 
