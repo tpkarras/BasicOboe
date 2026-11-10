@@ -30,7 +30,8 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                                                            jint inputChannelMask,
                                                            jint outputChannelMask, jstring audioAPI,
                                                            jstring performanceMode,
-                                                           jboolean sharingMode,
+                                                           jboolean inputSharingMode,
+                                                           jboolean outputSharingMode,
                                                            jint framesPerCallback,
                                                            jboolean inputIsSpatial,
                                                            jboolean outputIsSpatial,
@@ -51,6 +52,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
 
     for (int current: instanceTasks) {
 
+        jboolean sharingMode;
         int sampleRate;
         int channels;
         int channelMask;
@@ -75,7 +77,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
             }
 
             if (!target.empty()) {
-                __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Format");
+                __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Format", currentType);
                 if (target == "I16") {
                     instance.setFormat(oboe::AudioFormat::I16);
                 } else if (target == "Float") {
@@ -168,7 +170,13 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                 }
             }
 
-            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Sharing Mode");
+            if (current == 0) {
+                sharingMode = outputSharingMode;
+            } else {
+                sharingMode = inputSharingMode;
+            }
+
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Sharing Mode", currentType);
             if (!sharingMode) {
                 instance.setSharingMode(oboe::SharingMode::Shared);
             } else {
@@ -581,7 +589,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_writeOutput(JNIEnv *env, jobject thiz,
 
 JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thiz) {
-    jint *tempBuffer;
+    jint *tempBuffer = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
             JNITools::throwJavaException(env, "java/lang/Exception",
@@ -606,7 +614,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getSampleRate(JNIEnv *env, jobject thi
 
 JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject thiz) {
-    jint *tempBuffer;
+    jint *tempBuffer = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
             JNITools::throwJavaException(env, "java/lang/Exception",
@@ -632,7 +640,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getChannelCount(JNIEnv *env, jobject t
 
 JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
-    jint *id;
+    jint *id = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
             JNITools::throwJavaException(env, "java/lang/Exception",
@@ -749,5 +757,49 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getChannelMask(JNIEnv *env, jobject th
     return reinterpret_cast<jintArray>(channelMask);
 
 }
+
+}
+extern "C"
+JNIEXPORT jbooleanArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getSharingMode(JNIEnv *env, jobject thiz) {
+jboolean *sharingMode = nullptr;
+jbooleanArray result;
+
+    if (!duplex) {
+        if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jbooleanArray(nullptr);
+        }
+
+        if(BasicOboeEngine::stream->getSharingMode() == oboe::SharingMode::Shared){
+            sharingMode[0] = false;
+        } else {
+            sharingMode[0] = true;
+        }
+        result = env->NewBooleanArray(1);
+        env->SetBooleanArrayRegion(result, 0, 1, sharingMode);
+    } else {
+        if (BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed ||
+            BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jbooleanArray(nullptr);
+        }
+        if(BasicOboeDuplexEngine::inputStream->getSharingMode() == oboe::SharingMode::Shared){
+            sharingMode[0] = false;
+        } else {
+            sharingMode[0] = true;
+        }
+        if(BasicOboeDuplexEngine::outputStream->getSharingMode() == oboe::SharingMode::Shared){
+            sharingMode[1] = false;
+        } else {
+            sharingMode[1] = true;
+        }
+        result = env->NewBooleanArray(2);
+        env->SetBooleanArrayRegion(result, 0, 2, sharingMode);
+    }
+
+    return result;
 
 }

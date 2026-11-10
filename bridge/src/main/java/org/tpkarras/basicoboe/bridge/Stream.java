@@ -37,13 +37,14 @@ public final class Stream {
     private int OutputChannelMask = 0;
     private String AudioAPI;
     private String performanceMode;
-    private boolean sharingMode = false;
+    private boolean inputSharingMode = false;
+    private boolean outputSharingMode = false;
     private int famesPerCallback = 0;
     private boolean InputIsSpatial = false;
     private boolean OutputIsSpatial = false;
     private String InputUsage;
     private String OutputUsage;
-    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String inputFormat, String outputFormat, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
+    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String inputFormat, String outputFormat, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean inputSharingMode, boolean outputSharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
     private native void deviceTerminate();
     private native ByteBuffer readInput();
     private native int[] getSampleRate();
@@ -52,6 +53,8 @@ public final class Stream {
     private native String[] getFormat();
 
     private native int[] getChannelMask();
+
+    private native boolean[] getSharingMode();
 
     private native void writeOutput(ByteBuffer output);
 
@@ -154,7 +157,7 @@ public final class Stream {
             attributionTag = "";
         }
 
-        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, formatInput, formatOutput, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, sharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
+        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, formatInput, formatOutput, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, inputSharingMode, outputSharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
     initialized = true;
     }
 
@@ -331,7 +334,7 @@ public final class Stream {
         }
 
         if(outputDevice == 0){
-            throw new Exception("Audio device not an input device");
+            throw new Exception("Audio device not an output device");
         }
 
         if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
@@ -429,7 +432,7 @@ public final class Stream {
         }
 
         if(outputDevice == 0){
-            throw new Exception("Audio device not an input device");
+            throw new Exception("Audio device not an output device");
         }
 
         if(channels < 0){
@@ -505,12 +508,12 @@ public final class Stream {
         }
 
         if(outputDevice == 0){
-            throw new Exception("Audio device not an input device");
+            throw new Exception("Audio device not an output device");
         }
 
         if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.bridge.constants.ChannelMask.Stereo) {
 
-            InputChannelMask = channelMasks[0];
+            OutputChannelMask = channelMasks[0];
 
         } else {
 
@@ -551,7 +554,7 @@ public final class Stream {
 
             }
 
-            InputChannelMask = tempChannelMask;
+            OutputChannelMask = tempChannelMask;
 
         }
 
@@ -585,13 +588,31 @@ public final class Stream {
 
     }
 
-    public void setSharingMode(boolean mode) throws Exception{
+    public void setInputSharinMode(boolean mode) throws Exception{
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        sharingMode = mode;
+        if(inputDevice == 0){
+            throw new Exception("Audio device not an input device");
+        }
+
+        inputSharingMode = mode;
+
+    }
+
+    public void setOutputSharingMode(boolean mode) throws Exception{
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(outputDevice == 0){
+            throw new Exception("Audio device not an output device");
+        }
+
+        outputSharingMode = mode;
 
     }
 
