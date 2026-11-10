@@ -1,5 +1,6 @@
 package org.tpkarras.basicoboe;
 
+import android.Manifest;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.os.Build;
@@ -7,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import org.tpkarras.basicoboe.constants.AudioAPIs;
 import org.tpkarras.basicoboe.constants.PerformanceMode;
@@ -162,6 +164,7 @@ public final class Stream {
     }
 
     @Nullable
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     public ByteBuffer getInput() throws Exception {
 
         if(!initialized){

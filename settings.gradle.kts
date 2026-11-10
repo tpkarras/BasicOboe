@@ -15,7 +15,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal() // 👈 Add this at the very top of this block
+        mavenLocal()
         google()
         mavenCentral()
     }
