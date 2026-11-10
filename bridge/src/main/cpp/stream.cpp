@@ -22,7 +22,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                                                            jstring packageName,
                                                            jstring attributionTag,
                                                            jint deviceIDInput, jint deviceIDOutput,
-                                                           jstring format, jint inputSampleRate,
+                                                           jstring inputFormat, jstring outputFormat, jint inputSampleRate,
                                                            jint outputSampleRate,
                                                            jint inputChannels, jint outputChannels,
                                                            jint inputChannelMask,
@@ -53,7 +53,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
         int channels;
         int channelMask;
         char *currentType;
-        std::string target = JNITools::stringCheckNConvert(env, format);
+        std::string target;
 
         if (instanceTasks.size() == 2 && current == 0 || instanceTasks.size() == 1) {
             if (current == 0) {
@@ -64,6 +64,12 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                 currentType = (char *) "Input";
                 instance.setDeviceId(deviceIDInput);
                 instance.setDirection(oboe::Direction::Input);
+            }
+
+            if (current == 0) {
+                target = JNITools::stringCheckNConvert(env, outputFormat);
+            } else {
+                target = JNITools::stringCheckNConvert(env, inputFormat);
             }
 
             if (!target.empty()) {

@@ -27,7 +27,8 @@ public final class Stream {
     private final int inputDevice;
     private final int outputDevice;
     private boolean initialized = false;
-    private String Format;
+    private String inputFormat;
+    private String outputFormat;
     private int InputSampleRate;
     private int OutputSampleRate;
     private int InputChannelCount;
@@ -42,7 +43,7 @@ public final class Stream {
     private boolean OutputIsSpatial = false;
     private String InputUsage;
     private String OutputUsage;
-    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String format, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
+    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String inputFormat, String outputFormat, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean sharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
     private native void deviceTerminate();
     private native ByteBuffer readInput();
     private native int[] getSampleRate();
@@ -122,7 +123,8 @@ public final class Stream {
             throw new Exception("Audio device already initialized");
         }
 
-        String format;
+        String formatInput;
+        String formatOutput;
         int inputSampleRate;
         int outputSampleRate;
         int inputChannelCount;
@@ -134,7 +136,8 @@ public final class Stream {
         String attributionTag;
 
         modePerformance = Objects.requireNonNullElse(performanceMode, "");
-        format  = Objects.requireNonNullElse(Format, "");
+        formatInput  = Objects.requireNonNullElse(inputFormat, "");
+        formatOutput  = Objects.requireNonNullElse(outputFormat, "");
         outputUsage  = Objects.requireNonNullElse(OutputUsage, "");
         inputUsage  = Objects.requireNonNullElse(InputUsage, "");
         audioAPI = Objects.requireNonNullElse(AudioAPI, "");
@@ -149,7 +152,7 @@ public final class Stream {
             attributionTag = "";
         }
 
-        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, format, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, sharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
+        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, formatInput, formatOutput, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, sharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
     initialized = true;
     }
 
@@ -280,7 +283,7 @@ public final class Stream {
 
     }
 
-    public void setFormat(@NonNull String format) throws Exception {
+    public void setInputFormat(@NonNull String format) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -290,7 +293,21 @@ public final class Stream {
             throw new Exception("Not a valid audio API");
         }
 
-        Format = format;
+        inputFormat = format;
+
+    }
+
+    public void setOutputFormat(@NonNull String format) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.bridge.constants.Format.I16, org.tpkarras.basicoboe.bridge.constants.Format.Float, org.tpkarras.basicoboe.bridge.constants.Format.I24, org.tpkarras.basicoboe.bridge.constants.Format.I32, org.tpkarras.basicoboe.bridge.constants.Format.IEC61937, org.tpkarras.basicoboe.bridge.constants.Format.MP3, org.tpkarras.basicoboe.bridge.constants.Format.AAC_LC, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.bridge.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.bridge.constants.Format.AAC_ELD, org.tpkarras.basicoboe.bridge.constants.Format.AAC_XHE, org.tpkarras.basicoboe.bridge.constants.Format.OPUS})){
+            throw new Exception("Not a valid audio API");
+        }
+
+        outputFormat = format;
 
     }
 
