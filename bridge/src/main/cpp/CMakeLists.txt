@@ -15,10 +15,13 @@ project("bridge")
 # Build our own native library
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
-        ${CMAKE_CURRENT_SOURCE_DIR}/stream.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/jni-tools.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/jni-tools.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/fifo.h)
+        stream.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/fifo.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/callback.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/jni-tools.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/jni-tools.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/stream-tools.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/stream-tools.cpp)
 
 # Find the Oboe package
 find_package (oboe REQUIRED CONFIG)

@@ -1,6 +1,7 @@
 #include <oboe/Oboe.h>
 #include <jni.h>
-#include "jni-tools.h"
+#include "tools/jni-tools.h"
+#include "tools/stream-tools.h"
 #include <android/log.h>
 #include "callback.h"
 
@@ -413,7 +414,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
 
     } else if (instanceTasks.size() == 2) {
 
-        mDuplexDataCallback->setSharedInputStream(BasicOboeDuplexEngine::inputStream); // Mandatory
+        mDuplexDataCallback->setSharedInputStream(BasicOboeDuplexEngine::inputStream);
         mDuplexDataCallback->setOutputStream(BasicOboeDuplexEngine::outputStream.get());
         oboe::Result result = mDuplexDataCallback->start();
 
@@ -428,6 +429,46 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
     }
     __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Success starting stream");
 
+    if(!duplex) {
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "DeviceID: %d", BasicOboeEngine::stream->getDeviceId());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %s", StreamTools::audioAPIToString(BasicOboeEngine::stream->getAudioApi()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %s", StreamTools::performanceModeToString(BasicOboeEngine::stream->getPerformanceMode()).data());
+        if(BasicOboeEngine::stream->getSharingMode() == oboe::SharingMode::Shared){
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sharing Mode: Shared");
+        } else {
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sharing Mode: Exclusive");
+        }
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Format: %s", StreamTools::formatToString(BasicOboeEngine::stream->getFormat()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Usage: %s", StreamTools::usageToString(BasicOboeEngine::stream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Channel Mask: %d", BasicOboeEngine::stream->getChannelMask());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Channels: %d", BasicOboeEngine::stream->getChannelCount());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sample Rate: %d", BasicOboeEngine::stream->getSampleRate());
+    } else {
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %s", StreamTools::audioAPIToString(BasicOboeDuplexEngine::inputStream->getAudioApi()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %s", StreamTools::performanceModeToString(BasicOboeDuplexEngine::inputStream->getPerformanceMode()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input DeviceID: %d", BasicOboeDuplexEngine::inputStream->getDeviceId());
+        if(BasicOboeDuplexEngine::inputStream->getSharingMode() == oboe::SharingMode::Shared){
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sharing Mode: Shared");
+        } else {
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sharing Mode: Exclusive");
+        }
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Format: %s", StreamTools::formatToString(BasicOboeDuplexEngine::inputStream->getFormat()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Usage: %s", StreamTools::usageToString(BasicOboeDuplexEngine::inputStream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Channel Mask: %d", BasicOboeDuplexEngine::inputStream->getChannelMask());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Channels: %d", BasicOboeDuplexEngine::inputStream->getChannelCount());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sample Rate: %d", BasicOboeDuplexEngine::inputStream->getSampleRate());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output DeviceID: %d", BasicOboeDuplexEngine::outputStream->getDeviceId());
+        if(BasicOboeDuplexEngine::outputStream->getSharingMode() == oboe::SharingMode::Shared){
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Sharing Mode: Shared");
+        } else {
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Sharing Mode: Exclusive");
+        }
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Format: %s", StreamTools::formatToString(BasicOboeDuplexEngine::outputStream->getFormat()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Usage: %s", StreamTools::usageToString(BasicOboeDuplexEngine::outputStream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Channel Mask: %d", BasicOboeDuplexEngine::outputStream->getChannelMask());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Channels: %d", BasicOboeDuplexEngine::outputStream->getChannelCount());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Sample Rate: %d", BasicOboeDuplexEngine::outputStream->getSampleRate());
+    }
 }
 
 JNIEXPORT void JNICALL
@@ -695,35 +736,7 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
 
     for (int i = 0; i < formats.size(); i++) {
 
-        if (formats[i] == oboe::AudioFormat::Float) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "Float");
-        } else if (formats[i] == oboe::AudioFormat::I16) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "I16");
-        } else if (formats[i] == oboe::AudioFormat::I24) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "I24");
-        } else if (formats[i] == oboe::AudioFormat::I32) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "I32");
-        } else if (formats[i] == oboe::AudioFormat::AAC_ELD) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_ELD");
-        } else if (formats[i] == oboe::AudioFormat::AAC_HE_V1) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_HE_V1");
-        } else if (formats[i] == oboe::AudioFormat::AAC_HE_V2) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_HE_V2");
-        } else if (formats[i] == oboe::AudioFormat::AAC_LC) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_LC");
-        } else if (formats[i] == oboe::AudioFormat::IEC61937) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "IEC61937");
-        } else if (formats[i] == oboe::AudioFormat::AAC_XHE) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_XHE");
-        } else if (formats[i] == oboe::AudioFormat::OPUS) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "OPUS");
-        } else if (formats[i] == oboe::AudioFormat::MP3) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "MP3");
-        } else if (formats[i] == oboe::AudioFormat::Invalid) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "Invalid");
-        } else if (formats[i] == oboe::AudioFormat::Unspecified) {
-            env->SetObjectArrayElement(stringArray, i, (jstring) "Unspecified");
-        }
+            env->SetObjectArrayElement(stringArray, i, (jstring) StreamTools::formatToString(formats[i]).data());
 
     }
 
