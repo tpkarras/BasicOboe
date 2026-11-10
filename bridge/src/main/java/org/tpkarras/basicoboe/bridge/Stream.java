@@ -49,7 +49,7 @@ public final class Stream {
     private native int[] getSampleRate();
     private native int[] getChannelCount();
     private native int[] getDeviceId();
-    private native String getFormati();
+    private native String[] getFormat();
 
     private native void writeOutput(ByteBuffer output);
 
@@ -264,14 +264,14 @@ public final class Stream {
     }
 
     @Nullable
-    public String getFormat() throws Exception {
+    public String[] getFormats() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        String format;
+        String[] format;
         try {
-            format = getFormati();
+            format = getFormat();
         } catch(Exception e){
             if(initialized){
                 this.terminate();

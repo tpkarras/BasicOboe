@@ -643,54 +643,69 @@ Java_org_tpkarras_basicoboe_bridge_Stream_getDeviceId(JNIEnv *env, jobject thiz)
 }
 
 
-JNIEXPORT jstring JNICALL
-Java_org_tpkarras_basicoboe_bridge_Stream_getFormati(JNIEnv *env, jobject thiz) {
-    oboe::AudioFormat format;
+JNIEXPORT jobjectArray JNICALL
+Java_org_tpkarras_basicoboe_bridge_Stream_getFormat(JNIEnv *env, jobject thiz) {
+    std::vector<oboe::AudioFormat> formats;
     if (!duplex) {
         if(BasicOboeEngine::stream->getState() == oboe::StreamState::Closed){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jstring(nullptr);
+            return jobjectArray(nullptr);
         }
-        format = BasicOboeEngine::stream->getFormat();
+        formats[0] = BasicOboeEngine::stream->getFormat();
     } else {
         if(BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed || BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed ){
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jstring(nullptr);
+            return jobjectArray(nullptr);
         }
-        format = BasicOboeDuplexEngine::inputStream->getFormat();
+        formats[0] = BasicOboeDuplexEngine::inputStream->getFormat();
+        formats[1] = BasicOboeDuplexEngine::outputStream->getFormat();
     }
 
-        if((oboe::AudioFormat)format == oboe::AudioFormat::Float){
-            return (jstring)"Float";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::I16){
-            return (jstring)"I16";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::I24){
-            return (jstring)"I24";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::I32){
-            return (jstring)"I32";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_ELD){
-            return (jstring)"AAC_ELD";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_HE_V1){
-            return (jstring)"AAC_HE_V1";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_HE_V2){
-            return (jstring)"AAC_HE_V2";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_LC){
-            return (jstring)"AAC_LC";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::IEC61937){
-            return (jstring)"IEC61937";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::AAC_XHE){
-            return (jstring)"AAC_XHE";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::OPUS){
-            return (jstring)"OPUS";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::MP3){
-            return (jstring)"MP3";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::Invalid){
-            return (jstring)"Invalid";
-        } else if((oboe::AudioFormat)format == oboe::AudioFormat::Unspecified){
-            return (jstring)"Unspecified";
+    jobjectArray stringArray = env->NewObjectArray(formats.size(), env->FindClass("java/lang/String"), nullptr);
+    if (stringArray == nullptr) {
+        JNITools::throwJavaException(env, "java/lang/Exception",
+                                     "Out of memory");
+        return nullptr;
+    }
+
+    for(int i = 0; i < formats.size(); i++) {
+
+        if (formats[i] == oboe::AudioFormat::Float) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "Float");
+        } else if (formats[i] == oboe::AudioFormat::I16) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "I16");
+        } else if (formats[i] == oboe::AudioFormat::I24) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "I24");
+        } else if (formats[i] == oboe::AudioFormat::I32) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "I32");
+        } else if (formats[i] == oboe::AudioFormat::AAC_ELD) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_ELD");
+        } else if (formats[i] == oboe::AudioFormat::AAC_HE_V1) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_HE_V1");
+        } else if (formats[i] == oboe::AudioFormat::AAC_HE_V2) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_HE_V2");
+        } else if (formats[i] == oboe::AudioFormat::AAC_LC) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_LC");
+        } else if (formats[i] == oboe::AudioFormat::IEC61937) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "IEC61937");
+        } else if (formats[i] == oboe::AudioFormat::AAC_XHE) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "AAC_XHE");
+        } else if (formats[i] == oboe::AudioFormat::OPUS) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "OPUS");
+        } else if (formats[i] == oboe::AudioFormat::MP3) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "MP3");
+        } else if (formats[i] == oboe::AudioFormat::Invalid) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "Invalid");
+        } else if (formats[i] == oboe::AudioFormat::Unspecified) {
+            env->SetObjectArrayElement(stringArray, i, (jstring) "Unspecified");
         }
+
+    }
+
+    return stringArray;
+
 
 }
 
