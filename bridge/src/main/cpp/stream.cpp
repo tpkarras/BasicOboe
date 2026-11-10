@@ -304,38 +304,38 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                 oboe::AudioFormat format = BasicOboeDuplexEngine::outputStream->getFormat();
                 if(format == oboe::AudioFormat::Float) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::outputStream->getChannelCount() * sizeof(float),
+                            channels * sizeof(float),
                             BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I32) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::outputStream->getChannelCount() * sizeof(int32_t),
+                            channels * sizeof(int32_t),
                             BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I16) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::outputStream->getChannelCount() * sizeof(int16_t),
+                            channels * sizeof(int16_t),
                             BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * channels);
                 } else {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::outputStream->getChannelCount() * sizeof(uint8_t),
+                            channels * sizeof(uint8_t),
                             BasicOboeDuplexEngine::outputStream->getFramesPerBurst() * channels);
                 }
             } else {
                 oboe::AudioFormat format = BasicOboeEngine::stream->getFormat();
                 if(format == oboe::AudioFormat::Float) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(float),
+                            channels * sizeof(float),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I32) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(int32_t),
+                            channels * sizeof(int32_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I16) {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(int16_t),
+                            channels * sizeof(int16_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else {
                     Fifo::outputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(uint8_t),
+                            channels * sizeof(uint8_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 }
             }
@@ -344,38 +344,38 @@ Java_org_tpkarras_basicoboe_bridge_Stream_deviceInitialize(JNIEnv *env, jobject 
                 oboe::AudioFormat format = BasicOboeDuplexEngine::inputStream->getFormat();
                 if(format == oboe::AudioFormat::Float) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::inputStream->getChannelCount() * sizeof(float),
+                            channels * sizeof(float),
                             BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I32) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::inputStream->getChannelCount() * sizeof(int32_t),
+                            channels * sizeof(int32_t),
                             BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I16) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::inputStream->getChannelCount() * sizeof(int16_t),
+                            channels * sizeof(int16_t),
                             BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * channels);
                 } else {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeDuplexEngine::inputStream->getChannelCount() * sizeof(uint8_t),
+                            channels * sizeof(uint8_t),
                             BasicOboeDuplexEngine::inputStream->getFramesPerBurst() * channels);
                 }
             } else {
                 oboe::AudioFormat format = BasicOboeEngine::stream->getFormat();
                 if(format == oboe::AudioFormat::Float) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(float),
+                            channels * sizeof(float),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I32) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(int32_t),
+                            channels * sizeof(int32_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else if(format == oboe::AudioFormat::I16) {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(int16_t),
+                            channels * sizeof(int16_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 } else {
                     Fifo::inputFifo = std::make_unique<oboe::FifoBuffer>(
-                            BasicOboeEngine::stream->getChannelCount() * sizeof(uint8_t),
+                            channels * sizeof(uint8_t),
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 }
             }
