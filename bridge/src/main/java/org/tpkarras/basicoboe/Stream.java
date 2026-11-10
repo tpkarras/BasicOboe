@@ -2,6 +2,7 @@ package org.tpkarras.basicoboe;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioDeviceInfo;
 import android.os.Build;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
+import androidx.core.content.ContextCompat;
 
 import org.tpkarras.basicoboe.constants.AudioAPIs;
 import org.tpkarras.basicoboe.constants.PerformanceMode;
@@ -128,6 +130,10 @@ public final class Stream {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
+        }
+
+        if(inputDevice > 0 && (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED)){
+            throw new Exception("Cannot open input device, RECORD_AUDIO permission not granted");
         }
 
         String formatInput;
