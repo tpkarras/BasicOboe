@@ -482,6 +482,10 @@ public final class Stream {
             throw new Exception("Audio device not an input device");
         }
 
+        if(channelMasks.length == 0){
+            throw new Exception("Channel masks cannot be empty.");
+        }
+
         if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.constants.ChannelMask.Stereo) {
 
             InputChannelMask = channelMasks[0];
@@ -538,6 +542,10 @@ public final class Stream {
 
         if(outputDevice == 0){
             throw new Exception("Audio device not an output device");
+        }
+
+        if(channelMasks.length == 0){
+            throw new Exception("Channel masks cannot be empty.");
         }
 
         if(channelMasks.length == 1 && channelMasks[0] == org.tpkarras.basicoboe.constants.ChannelMask.Stereo) {
