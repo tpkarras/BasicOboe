@@ -3,7 +3,7 @@ An android library acting as a bridge between Android apps that use audio and Ob
 
 ## Key points
 * ✅**Easy to implement,** with additional settings for those willing to tinker.
-* 🫧**Does not process audio,** only raw floating-point data for whatever processing you want to do.
+* 🫧**Does not process audio,** only raw data in whatever format you choose for whatever processing you want to do.
 * 🎧**Supports duplex mode,** meaning both input and output.
 
 ## Wiki
