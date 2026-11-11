@@ -472,7 +472,7 @@ public final class Stream {
 
     }
 
-    public void setInputChannelMask(int[] channelMasks) throws Exception {
+    public void setInputChannelMask(@NonNull int[] channelMasks) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -679,7 +679,7 @@ public final class Stream {
 
     }
 
-    public void setInputUsage(String usage) throws Exception {
+    public void setInputUsage(@NonNull String usage) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -693,7 +693,7 @@ public final class Stream {
 
     }
 
-    public void setOutputUsage(String usage) throws Exception {
+    public void setOutputUsage(@NonNull String usage) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
