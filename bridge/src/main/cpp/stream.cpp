@@ -225,20 +225,20 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
             }
 
         } else {
-            if (current == 0) {
+            if (current == 1) {
                 instance.setDataCallback(mDuplexDataCallback);
-                oboe::Result result = instance.openStream(BasicOboeDuplexEngine::outputStream);
+                oboe::Result result = instance.openStream(BasicOboeDuplexEngine::inputStream);
 
-                if (result != oboe::Result::OK || BasicOboeDuplexEngine::outputStream == nullptr) {
+                if (result != oboe::Result::OK || BasicOboeDuplexEngine::inputStream == nullptr) {
                     JNITools::throwJavaException(env, "java/lang/Exception",
                                                  "Failed to open Oboe audio stream");
                     return;
                 }
 
             } else {
-                oboe::Result result = instance.openStream(BasicOboeDuplexEngine::inputStream);
+                oboe::Result result = instance.openStream(BasicOboeDuplexEngine::outputStream);
 
-                if (result != oboe::Result::OK || BasicOboeDuplexEngine::inputStream == nullptr) {
+                if (result != oboe::Result::OK || BasicOboeDuplexEngine::outputStream == nullptr) {
                     JNITools::throwJavaException(env, "java/lang/Exception",
                                                  "Failed to open Oboe audio stream");
                     return;
