@@ -13,8 +13,11 @@ import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
 
 import org.tpkarras.basicoboe.constants.AudioAPIs;
+import org.tpkarras.basicoboe.constants.ContentType;
+import org.tpkarras.basicoboe.constants.Format;
 import org.tpkarras.basicoboe.constants.PerformanceMode;
 import org.tpkarras.basicoboe.constants.SampleRate;
+import org.tpkarras.basicoboe.constants.SampleRateConversionQuality;
 import org.tpkarras.basicoboe.constants.Usage;
 
 import java.nio.ByteBuffer;
@@ -31,30 +34,34 @@ public final class Stream {
     private final int inputDevice;
     private final int outputDevice;
     private boolean initialized = false;
-    private String inputFormat;
-    private String outputFormat;
+    private int inputFormat;
+    private int outputFormat;
     private int InputSampleRate;
     private int OutputSampleRate;
     private int InputChannelCount;
     private int OutputChannelCount;
-    private int InputChannelMask = 0;
-    private int OutputChannelMask = 0;
-    private String AudioAPI;
-    private String performanceMode;
-    private boolean inputSharingMode = false;
-    private boolean outputSharingMode = false;
-    private int famesPerCallback = 0;
-    private boolean InputIsSpatial = false;
-    private boolean OutputIsSpatial = false;
-    private String InputUsage;
-    private String OutputUsage;
-    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, String inputFormat, String outputFormat, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, String audioAPI, String performanceMode, boolean inputSharingMode, boolean outputSharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, String inputUsage, String outputUsage);
+    private int InputChannelMask;
+    private int OutputChannelMask;
+    private int AudioAPI;
+    private int performanceMode;
+    private boolean inputSharingMode;
+    private boolean outputSharingMode;
+    private int framesPerCallback;
+    private boolean InputIsSpatial;
+    private boolean OutputIsSpatial;
+    private int InputUsage;
+    private int OutputUsage;
+    private int InputContentType;
+    private int OutputContentType;
+    private int iSampleRateConversionQuality;
+    private native void deviceInitialize(String packageName, String attributionTag, int deviceIDInput, int deviceIDOutput, int inputFormat, int outputFormat, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputChannelMask, int outputChannelMask, int audioAPI, int performanceMode, boolean inputSharingMode, boolean outputSharingMode, int famesPerCallback, boolean inputIsSpatial, boolean outputIsSpatial, int inputUsage, int outputUsage, int inputContentType, int outputContentType, int SampleRateConversionQuality);
     private native void deviceTerminate();
     private native ByteBuffer readInput();
     private native int[] getSampleRate();
     private native int[] getChannelCount();
     private native int[] getDeviceId();
-    private native String[] getFormat();
+    private native int[] getFormat();
+    private native int[] getContentType();
 
     private native int[] getChannelMask();
 
@@ -98,6 +105,7 @@ public final class Stream {
             }
 
             inputDevice = InputDevice.getId();
+            Log.d("InputDevice", String.valueOf(inputDevice));
 
         } else {
             inputDevice = 0;
@@ -105,7 +113,7 @@ public final class Stream {
 
         if(OutputDevice != null) {
 
-            if (!InputDevice.isSink()) {
+            if (!OutputDevice.isSink()) {
                 throw new Exception("Audio device not an output");
             }
 
@@ -136,28 +144,48 @@ public final class Stream {
             throw new Exception("Cannot open input device, RECORD_AUDIO permission not granted");
         }
 
-        String formatInput;
-        String formatOutput;
+        int formatInput;
+        int formatOutput;
         int inputSampleRate;
         int outputSampleRate;
         int inputChannelCount;
         int outputChannelCount;
-        String audioAPI;
-        String inputUsage;
-        String outputUsage;
-        String modePerformance;
+        int audioAPI;
+        int inputUsage;
+        int outputUsage;
+        int inputContentType;
+        int outputContentType;
+        int modePerformance;
+        int sampleRateConversionQuality;
+        boolean iinputSharingMode;
+        boolean ioutputSharingMode;
+        boolean iInputIsSpatial;
+        boolean iOutputIsSpatial;
+        int iInputChannelMask;
+        int iOutputChannelMask;
+        int iFramesPerCallback;
         String attributionTag;
 
-        modePerformance = Objects.requireNonNullElse(performanceMode, "");
-        formatInput  = Objects.requireNonNullElse(inputFormat, "");
-        formatOutput  = Objects.requireNonNullElse(outputFormat, "");
-        outputUsage  = Objects.requireNonNullElse(OutputUsage, "");
-        inputUsage  = Objects.requireNonNullElse(InputUsage, "");
-        audioAPI = Objects.requireNonNullElse(AudioAPI, "");
+        modePerformance = Objects.requireNonNullElse(performanceMode, 0);
+        sampleRateConversionQuality = Objects.requireNonNullElse(iSampleRateConversionQuality, 0);
+        formatInput  = Objects.requireNonNullElse(inputFormat, 0);
+        formatOutput  = Objects.requireNonNullElse(outputFormat, 0);
+        inputContentType  = Objects.requireNonNullElse(InputContentType, 0);
+        outputContentType  = Objects.requireNonNullElse(OutputContentType, 0);
+        outputUsage  = Objects.requireNonNullElse(OutputUsage, 0);
+        inputUsage  = Objects.requireNonNullElse(InputUsage, 0);
+        audioAPI = Objects.requireNonNullElse(AudioAPI, 0);
         inputSampleRate = Objects.requireNonNullElse(InputSampleRate, 0);
         outputSampleRate = Objects.requireNonNullElse(OutputSampleRate, 0);
         inputChannelCount = Objects.requireNonNullElse(InputChannelCount, 0);
         outputChannelCount = Objects.requireNonNullElse(OutputChannelCount, 0);
+        iinputSharingMode = Objects.requireNonNullElse(inputSharingMode, false);
+        ioutputSharingMode = Objects.requireNonNullElse(outputSharingMode, false);
+        iInputIsSpatial = Objects.requireNonNullElse(InputIsSpatial, false);
+        iOutputIsSpatial = Objects.requireNonNullElse(OutputIsSpatial, false);
+        iInputChannelMask = Objects.requireNonNullElse(InputChannelMask, 0);
+        iOutputChannelMask = Objects.requireNonNullElse(OutputChannelMask, 0);
+        iFramesPerCallback = Objects.requireNonNullElse(framesPerCallback, 0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             attributionTag = context.getAttributionTag();
@@ -165,7 +193,7 @@ public final class Stream {
             attributionTag = "";
         }
 
-        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, formatInput, formatOutput, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, InputChannelMask, OutputChannelMask, audioAPI, modePerformance, inputSharingMode, outputSharingMode, famesPerCallback, InputIsSpatial, OutputIsSpatial, inputUsage, outputUsage);
+        deviceInitialize(context.getPackageName(), attributionTag, inputDevice, outputDevice, formatInput, formatOutput, inputSampleRate, outputSampleRate, inputChannelCount, outputChannelCount, iInputChannelMask, iOutputChannelMask, audioAPI, modePerformance, iinputSharingMode, ioutputSharingMode, iFramesPerCallback, iInputIsSpatial, iOutputIsSpatial, inputUsage, outputUsage, inputContentType, outputContentType, sampleRateConversionQuality);
     initialized = true;
     }
 
@@ -299,12 +327,12 @@ public final class Stream {
     }
 
     @Nullable
-    public String[] getFormats() throws Exception {
+    public int[] getFormats() throws Exception {
         if(!initialized){
             throw new Exception("Audio device not initialized");
         }
 
-        String[] format;
+        int[] format;
         try {
             format = getFormat();
         } catch(Exception e){
@@ -315,6 +343,26 @@ public final class Stream {
         }
 
         return format;
+
+    }
+
+    @Nullable
+    public int[] getContentTypes() throws Exception {
+        if(!initialized){
+            throw new Exception("Audio device not initialized");
+        }
+
+        int[] contentTypes;
+        try {
+            contentTypes = getContentType();
+        } catch(Exception e){
+            if(initialized){
+                this.terminate();
+            }
+            return null;
+        }
+
+        return contentTypes;
 
     }
 
@@ -338,7 +386,7 @@ public final class Stream {
 
     }
 
-    public void setInputFormat(@NonNull String format) throws Exception {
+    public void setInputFormat(int format) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -348,7 +396,11 @@ public final class Stream {
             throw new Exception("Audio device not an input device");
         }
 
-        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.constants.Format.I16, org.tpkarras.basicoboe.constants.Format.Float, org.tpkarras.basicoboe.constants.Format.I24, org.tpkarras.basicoboe.constants.Format.I32, org.tpkarras.basicoboe.constants.Format.IEC61937, org.tpkarras.basicoboe.constants.Format.MP3, org.tpkarras.basicoboe.constants.Format.AAC_LC, org.tpkarras.basicoboe.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.constants.Format.AAC_ELD, org.tpkarras.basicoboe.constants.Format.AAC_XHE, org.tpkarras.basicoboe.constants.Format.OPUS})){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && format == org.tpkarras.basicoboe.constants.Format.IEC61937) {
+            throw new Exception("Attempted to use format IEC61937 with an unsupported API version");
+        }
+
+        if(!ObjectMatch((Integer)format, new Integer[]{org.tpkarras.basicoboe.constants.Format.I16, org.tpkarras.basicoboe.constants.Format.Float, org.tpkarras.basicoboe.constants.Format.I24, org.tpkarras.basicoboe.constants.Format.I32, org.tpkarras.basicoboe.constants.Format.IEC61937, org.tpkarras.basicoboe.constants.Format.MP3, org.tpkarras.basicoboe.constants.Format.AAC_LC, org.tpkarras.basicoboe.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.constants.Format.AAC_ELD, org.tpkarras.basicoboe.constants.Format.AAC_XHE, org.tpkarras.basicoboe.constants.Format.OPUS})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -356,7 +408,7 @@ public final class Stream {
 
     }
 
-    public void setOutputFormat(@NonNull String format) throws Exception {
+    public void setOutputFormat(int format) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
@@ -366,7 +418,11 @@ public final class Stream {
             throw new Exception("Audio device not an output device");
         }
 
-        if(!ObjectMatch(format, new String[]{org.tpkarras.basicoboe.constants.Format.I16, org.tpkarras.basicoboe.constants.Format.Float, org.tpkarras.basicoboe.constants.Format.I24, org.tpkarras.basicoboe.constants.Format.I32, org.tpkarras.basicoboe.constants.Format.IEC61937, org.tpkarras.basicoboe.constants.Format.MP3, org.tpkarras.basicoboe.constants.Format.AAC_LC, org.tpkarras.basicoboe.constants.Format.AAC_HE_V1, org.tpkarras.basicoboe.constants.Format.AAC_HE_V2, org.tpkarras.basicoboe.constants.Format.AAC_ELD, org.tpkarras.basicoboe.constants.Format.AAC_XHE, org.tpkarras.basicoboe.constants.Format.OPUS})){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && format == Format.IEC61937) {
+            throw new Exception("Attempted to use format IEC61937 with an unsupported API version");
+        }
+
+        if(!ObjectMatch((Integer)format, new Integer[]{Format.Unspecified, Format.I16, Format.Float, Format.I24, Format.I32, Format.IEC61937, Format.MP3, Format.AAC_LC, Format.AAC_HE_V1, Format.AAC_HE_V2, Format.AAC_ELD, Format.AAC_XHE, Format.OPUS})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -597,13 +653,13 @@ public final class Stream {
 
     }
 
-    public void setAudioAPI(@NonNull String audioAPI) throws Exception{
+    public void setAudioAPI(int audioAPI) throws Exception{
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        if(!ObjectMatch(audioAPI, new String[]{AudioAPIs.AAudio, AudioAPIs.OpenSL_ES, AudioAPIs.Unspecified})){
+        if(!ObjectMatch((Integer)audioAPI, new Integer[]{AudioAPIs.AAudio, AudioAPIs.OpenSL_ES, AudioAPIs.Unspecified})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -611,13 +667,13 @@ public final class Stream {
 
     }
 
-    public void setPerformanceMode(@NonNull String mode) throws Exception{
+    public void setPerformanceMode(int mode) throws Exception{
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        if(!ObjectMatch(mode, new String[]{PerformanceMode.LowLatency, PerformanceMode.PowerSaving, PerformanceMode.PowerSaving_Offloaded})){
+        if(!ObjectMatch((Integer)mode, new Integer[]{PerformanceMode.None, PerformanceMode.LowLatency, PerformanceMode.PowerSaving, PerformanceMode.PowerSavingOffloaded})){
             throw new Exception("Not a valid performance mode");
         }
 
@@ -663,7 +719,7 @@ public final class Stream {
             throw new Exception("Frames cannot be less than 0");
         }
 
-        famesPerCallback = frames;
+        framesPerCallback = frames;
 
     }
 
@@ -687,13 +743,13 @@ public final class Stream {
 
     }
 
-    public void setInputUsage(@NonNull String usage) throws Exception {
+    public void setInputUsage(int usage) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        if(!ObjectMatch(usage, new String[]{Usage.Alarm, Usage.AssistanceAccessibility, Usage.VoiceCommunicationSignalling, Usage.Notification, Usage.AssistanceNavigationGuidance, Usage.Assistant, Usage.AssistanceSonification, Usage.Game, Usage.Media, Usage.NotificationRingtone, Usage.VoiceCommunication, Usage.NotificationEvent})){
+        if(!ObjectMatch((Integer)usage, new Integer[]{0, Usage.Alarm, Usage.AssistanceAccessibility, Usage.VoiceCommunicationSignalling, Usage.Notification, Usage.AssistanceNavigationGuidance, Usage.Assistant, Usage.AssistanceSonification, Usage.Game, Usage.Media, Usage.NotificationRingtone, Usage.VoiceCommunication, Usage.NotificationEvent})){
             throw new Exception("Not a valid audio API");
         }
 
@@ -701,18 +757,58 @@ public final class Stream {
 
     }
 
-    public void setOutputUsage(@NonNull String usage) throws Exception {
+    public void setOutputUsage(int usage) throws Exception {
 
         if(initialized){
             throw new Exception("Audio device already initialized");
         }
 
-        if(!ObjectMatch(usage, new String[]{Usage.Alarm, Usage.AssistanceAccessibility, Usage.VoiceCommunicationSignalling, Usage.Notification, Usage.AssistanceNavigationGuidance, Usage.Assistant, Usage.AssistanceSonification, Usage.Game, Usage.Media, Usage.NotificationRingtone, Usage.VoiceCommunication, Usage.NotificationEvent})){
+        if(!ObjectMatch((Integer)usage, new Integer[]{0, Usage.Alarm, Usage.AssistanceAccessibility, Usage.VoiceCommunicationSignalling, Usage.Notification, Usage.AssistanceNavigationGuidance, Usage.Assistant, Usage.AssistanceSonification, Usage.Game, Usage.Media, Usage.NotificationRingtone, Usage.VoiceCommunication, Usage.NotificationEvent})){
             throw new Exception("Not a valid audio API");
         }
 
         OutputUsage = usage;
 
+    }
+
+    public void setInputContentType(int contentType) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(!ObjectMatch((Integer)contentType, new Integer[]{0, ContentType.Speech, ContentType.Music, ContentType.Movie, ContentType.Sonification})){
+            throw new Exception("Not a valid content type");
+        }
+
+        InputContentType = contentType;
+
+    }
+
+    public void setOutputContentType(int contentType) throws Exception {
+
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(!ObjectMatch((Integer)contentType, new Integer[]{0, ContentType.Speech, ContentType.Music, ContentType.Movie, ContentType.Sonification})){
+            throw new Exception("Not a valid content type");
+        }
+
+        OutputContentType = contentType;
+
+    }
+
+    public void setSampleRateConversionQuality(int mode) throws Exception{
+        if(initialized){
+            throw new Exception("Audio device already initialized");
+        }
+
+        if(!ObjectMatch((Integer)mode, new Integer[]{SampleRateConversionQuality.None, SampleRateConversionQuality.Fastest, SampleRateConversionQuality.Low, SampleRateConversionQuality.Medium, SampleRateConversionQuality.High, SampleRateConversionQuality.Best})){
+            throw new Exception("Not a valid sample rate conversion quality mode");
+        }
+
+        iSampleRateConversionQuality = mode;
     }
 
 }

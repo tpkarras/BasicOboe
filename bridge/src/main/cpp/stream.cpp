@@ -1,7 +1,6 @@
 #include <oboe/Oboe.h>
 #include <jni.h>
 #include "tools/jni-tools.h"
-#include "tools/stream-tools.h"
 #include <android/log.h>
 #include "callback.h"
 
@@ -23,87 +22,68 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
                                                            jstring packageName,
                                                            jstring attributionTag,
                                                            jint deviceIDInput, jint deviceIDOutput,
-                                                           jstring inputFormat,
-                                                           jstring outputFormat,
+                                                           jint inputFormat,
+                                                           jint outputFormat,
                                                            jint inputSampleRate,
                                                            jint outputSampleRate,
                                                            jint inputChannels, jint outputChannels,
                                                            jint inputChannelMask,
-                                                           jint outputChannelMask, jstring audioAPI,
-                                                           jstring performanceMode,
+                                                           jint outputChannelMask, jint audioAPI,
+                                                           jint performanceMode,
                                                            jboolean inputSharingMode,
                                                            jboolean outputSharingMode,
                                                            jint framesPerCallback,
                                                            jboolean inputIsSpatial,
                                                            jboolean outputIsSpatial,
-                                                           jstring inputUsage,
-                                                           jstring outputUsage) {
+                                                           jint inputUsage,
+                                                           jint outputUsage,
+                                                           jint inputContentType,
+                                                           jint outputContentType,
+                                                           jint sampleRateConversionQuality) {
     std::lock_guard<std::mutex> lock(mStreamMutex);
     oboe::AudioStreamBuilder instance;
 
     std::vector<int> instanceTasks = {};
 
-    if (deviceIDOutput > 0) {
-        instanceTasks.push_back(0);
-    }
-
     if (deviceIDInput > 0) {
         instanceTasks.push_back(1);
+    }
+
+    if (deviceIDOutput > 0) {
+        instanceTasks.push_back(0);
     }
 
     for (int current: instanceTasks) {
 
         jboolean sharingMode;
         int sampleRate;
+        int formatInt;
         int channels;
         int channelMask;
+        int usage;
+        int contentType;
         char *currentType;
         std::string target;
 
-        if (instanceTasks.size() == 2 && current == 0 || instanceTasks.size() == 1) {
             if (current == 0) {
                 currentType = (char *) "Output";
                 instance.setDeviceId(deviceIDOutput);
                 instance.setDirection(oboe::Direction::Output);
-            } else if (current == 1) {
+            } else {
                 currentType = (char *) "Input";
                 instance.setDeviceId(deviceIDInput);
                 instance.setDirection(oboe::Direction::Input);
             }
 
             if (current == 0) {
-                target = JNITools::stringCheckNConvert(env, outputFormat);
+                formatInt = outputFormat;
             } else {
-                target = JNITools::stringCheckNConvert(env, inputFormat);
+                formatInt = inputFormat;
             }
 
-            if (!target.empty()) {
+            if (formatInt > 0) {
                 __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Format", currentType);
-                if (target == "I16") {
-                    instance.setFormat(oboe::AudioFormat::I16);
-                } else if (target == "Float") {
-                    instance.setFormat(oboe::AudioFormat::Float);
-                } else if (target == "I24") {
-                    instance.setFormat(oboe::AudioFormat::I24);
-                } else if (target == "I32") {
-                    instance.setFormat(oboe::AudioFormat::I32);
-                } else if (target == "IEC61937") {
-                    instance.setFormat(oboe::AudioFormat::IEC61937);
-                } else if (target == "MP3") {
-                    instance.setFormat(oboe::AudioFormat::MP3);
-                } else if (target == "AAC_LC") {
-                    instance.setFormat(oboe::AudioFormat::AAC_LC);
-                } else if (target == "AAC_HE_V1") {
-                    instance.setFormat(oboe::AudioFormat::AAC_HE_V1);
-                } else if (target == "AAC_HE_V2") {
-                    instance.setFormat(oboe::AudioFormat::AAC_HE_V2);
-                } else if (target == "AAC_ELD") {
-                    instance.setFormat(oboe::AudioFormat::AAC_ELD);
-                } else if (target == "AAC_XHE") {
-                    instance.setFormat(oboe::AudioFormat::AAC_XHE);
-                } else if (target == "OPUS") {
-                    instance.setFormat(oboe::AudioFormat::OPUS);
-                }
+                    instance.setFormat(oboe::AudioFormat(formatInt));
             }
 
             if (current == 0) {
@@ -117,8 +97,6 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
                                     currentType);
                 instance.setSampleRate(static_cast<int32_t>(sampleRate));
             }
-
-        }
 
         if (current == 0) {
             channels = outputChannels;
@@ -144,32 +122,25 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
             instance.setChannelMask(static_cast<oboe::ChannelMask>(channelMask));
         }
 
-        if (instanceTasks.size() == 2 || current == 0 || instanceTasks.size() == 1) {
+        if (instanceTasks.size() == 2 && current == 1 || instanceTasks.size() == 1) {
 
-            target = JNITools::stringCheckNConvert(env, audioAPI);
-            if (!target.empty()) {
+            if (audioAPI > 0) {
                 __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Audio API");
-                if (target == "AAudio") {
-                    instance.setAudioApi(oboe::AudioApi::AAudio);
-                } else if (target == "OpenSL_ES") {
-                    instance.setAudioApi(oboe::AudioApi::OpenSLES);
-                } else if (target == "Unspecified") {
-                    instance.setAudioApi(oboe::AudioApi::Unspecified);
-                }
+                    instance.setAudioApi((oboe::AudioApi)audioAPI);
             }
 
-            target = JNITools::stringCheckNConvert(env, performanceMode);
-
-            if (!target.empty()) {
+            if (performanceMode > 0) {
                 __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Performance Mode");
-                if (target == "LowLatency") {
-                    instance.setPerformanceMode(oboe::PerformanceMode::LowLatency);
-                } else if (target == "PowerSaving") {
-                    instance.setPerformanceMode(oboe::PerformanceMode::PowerSaving);
-                } else if (target == "PowerSaving_Offloaded") {
-                    instance.setPerformanceMode(oboe::PerformanceMode::PowerSavingOffloaded);
-                }
+                    instance.setPerformanceMode((oboe::PerformanceMode)performanceMode);
             }
+
+
+            if (sampleRateConversionQuality > 0) {
+                __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Sample Rate Conversion Quality");
+                instance.setSampleRateConversionQuality((oboe::SampleRateConversionQuality)sampleRateConversionQuality);
+            }
+
+        }
 
             if (current == 0) {
                 sharingMode = outputSharingMode;
@@ -178,54 +149,41 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
             }
 
             __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Sharing Mode", currentType);
-            if (!sharingMode) {
+            if (sharingMode == JNI_FALSE) {
                 instance.setSharingMode(oboe::SharingMode::Shared);
             } else {
                 instance.setSharingMode(oboe::SharingMode::Exclusive);
             }
 
-        }
-
-        if (current == 0 && inputIsSpatial || current == 1 && outputIsSpatial) {
+        if (current == 0 && inputIsSpatial == JNI_TRUE || current == 1 && outputIsSpatial == JNI_TRUE) {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Spatialization Flag",
                                 currentType);
             instance.setIsContentSpatialized(true);
         }
 
         if (current == 0) {
-            target = JNITools::stringCheckNConvert(env, inputUsage);
-        } else if (current == 1) {
-            target = JNITools::stringCheckNConvert(env, outputUsage);
+            usage = inputUsage;
+        } else {
+            usage = outputUsage;
         }
 
-        if (!target.empty()) {
+        if (usage > 0) {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Usage", currentType);
-            if (target == "Media") {
-                instance.setUsage(oboe::Usage::Media);
-            } else if (target == "VoiceCommunication") {
-                instance.setUsage(oboe::Usage::VoiceCommunication);
-            } else if (target == "Notification") {
-                instance.setUsage(oboe::Usage::Notification);
-            } else if (target == "NotificationRingtone") {
-                instance.setUsage(oboe::Usage::NotificationRingtone);
-            } else if (target == "NotificationEvent") {
-                instance.setUsage(oboe::Usage::NotificationEvent);
-            } else if (target == "AssistanceAccessibility") {
-                instance.setUsage(oboe::Usage::AssistanceAccessibility);
-            } else if (target == "AssistanceNavigationGuidance") {
-                instance.setUsage(oboe::Usage::AssistanceNavigationGuidance);
-            } else if (target == "AssistanceSonification") {
-                instance.setUsage(oboe::Usage::AssistanceSonification);
-            } else if (target == "Game") {
-                instance.setUsage(oboe::Usage::Game);
-            } else if (target == "VoiceCommunicationSignalling") {
-                instance.setUsage(oboe::Usage::VoiceCommunicationSignalling);
-            } else if (target == "Assistant") {
-                instance.setUsage(oboe::Usage::Assistant);
-            }
+                instance.setUsage((oboe::Usage)usage);
         }
 
-        if (instanceTasks.size() == 2 || current == 0 || instanceTasks.size() == 1) {
+        if (current == 0) {
+            contentType = inputContentType;
+        } else {
+            contentType = outputContentType;
+        }
+
+        if (contentType > 0) {
+            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Content Type", currentType);
+            instance.setContentType((oboe::ContentType)contentType);
+        }
+
+        if (instanceTasks.size() == 2 && current == 1 || instanceTasks.size() == 1) {
 
             instance.setFormatConversionAllowed(true);
 
@@ -248,34 +206,7 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
 
         }
 
-        if (!target.empty()) {
-            __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting Usage");
-            if (target == "Media") {
-                instance.setUsage(oboe::Usage::Media);
-            } else if (target == "VoiceCommunication") {
-                instance.setUsage(oboe::Usage::VoiceCommunication);
-            } else if (target == "Notification") {
-                instance.setUsage(oboe::Usage::Notification);
-            } else if (target == "NotificationRingtone") {
-                instance.setUsage(oboe::Usage::NotificationRingtone);
-            } else if (target == "NotificationEvent") {
-                instance.setUsage(oboe::Usage::NotificationEvent);
-            } else if (target == "AssistanceAccessibility") {
-                instance.setUsage(oboe::Usage::AssistanceAccessibility);
-            } else if (target == "AssistanceNavigationGuidance") {
-                instance.setUsage(oboe::Usage::AssistanceNavigationGuidance);
-            } else if (target == "AssistanceSonification") {
-                instance.setUsage(oboe::Usage::AssistanceSonification);
-            } else if (target == "Game") {
-                instance.setUsage(oboe::Usage::Game);
-            } else if (target == "VoiceCommunicationSignalling") {
-                instance.setUsage(oboe::Usage::VoiceCommunicationSignalling);
-            } else if (target == "Assistant") {
-                instance.setUsage(oboe::Usage::Assistant);
-            }
-        }
-
-        if (instanceTasks.size() == 2 && current == 1) {
+        if (instanceTasks.size() == 2 && current == 0) {
             instance.setBufferCapacityInFrames(
                     BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * channels);
         }
@@ -356,7 +287,7 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
                             BasicOboeEngine::stream->getFramesPerBurst() * channels);
                 }
             }
-        } else if (current == 1) {
+        } else {
             if (instanceTasks.size() == 2) {
                 oboe::AudioFormat format = BasicOboeDuplexEngine::inputStream->getFormat();
                 if (format == oboe::AudioFormat::Float) {
@@ -410,8 +341,6 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
             return;
         }
 
-        duplex = false;
-
     } else if (instanceTasks.size() == 2) {
 
         mDuplexDataCallback->setSharedInputStream(BasicOboeDuplexEngine::inputStream);
@@ -431,29 +360,31 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
 
     if(!duplex) {
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "DeviceID: %d", BasicOboeEngine::stream->getDeviceId());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %s", StreamTools::audioAPIToString(BasicOboeEngine::stream->getAudioApi()).data());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %s", StreamTools::performanceModeToString(BasicOboeEngine::stream->getPerformanceMode()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %d", (jint)BasicOboeEngine::stream->getAudioApi());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %d", (jint)BasicOboeEngine::stream->getPerformanceMode());
         if(BasicOboeEngine::stream->getSharingMode() == oboe::SharingMode::Shared){
             __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sharing Mode: Shared");
         } else {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sharing Mode: Exclusive");
         }
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Format: %s", StreamTools::formatToString(BasicOboeEngine::stream->getFormat()).data());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Usage: %s", StreamTools::usageToString(BasicOboeEngine::stream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Format: %d", jint(BasicOboeEngine::stream->getFormat()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Usage: %d", jint(BasicOboeEngine::stream->getUsage()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Content Type: %d", jint(BasicOboeEngine::stream->getContentType()));
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Channel Mask: %d", BasicOboeEngine::stream->getChannelMask());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Channels: %d", BasicOboeEngine::stream->getChannelCount());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Sample Rate: %d", BasicOboeEngine::stream->getSampleRate());
     } else {
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %s", StreamTools::audioAPIToString(BasicOboeDuplexEngine::inputStream->getAudioApi()).data());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %s", StreamTools::performanceModeToString(BasicOboeDuplexEngine::inputStream->getPerformanceMode()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "AudioAPI: %d", jint(BasicOboeDuplexEngine::inputStream->getAudioApi()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "PerformanceMode: %d", (jint)BasicOboeDuplexEngine::inputStream->getPerformanceMode());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input DeviceID: %d", BasicOboeDuplexEngine::inputStream->getDeviceId());
         if(BasicOboeDuplexEngine::inputStream->getSharingMode() == oboe::SharingMode::Shared){
             __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sharing Mode: Shared");
         } else {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sharing Mode: Exclusive");
         }
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Format: %s", StreamTools::formatToString(BasicOboeDuplexEngine::inputStream->getFormat()).data());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Usage: %s", StreamTools::usageToString(BasicOboeDuplexEngine::inputStream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Format: %d", jint(BasicOboeDuplexEngine::inputStream->getFormat()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Usage: %d", jint(BasicOboeDuplexEngine::inputStream->getUsage()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Content Type: %d", jint(BasicOboeDuplexEngine::inputStream->getContentType()));
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Channel Mask: %d", BasicOboeDuplexEngine::inputStream->getChannelMask());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Channels: %d", BasicOboeDuplexEngine::inputStream->getChannelCount());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Input Sample Rate: %d", BasicOboeDuplexEngine::inputStream->getSampleRate());
@@ -463,8 +394,9 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
         } else {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Sharing Mode: Exclusive");
         }
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Format: %s", StreamTools::formatToString(BasicOboeDuplexEngine::outputStream->getFormat()).data());
-        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Usage: %s", StreamTools::usageToString(BasicOboeDuplexEngine::outputStream->getUsage()).data());
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Format: %d", jint(BasicOboeDuplexEngine::outputStream->getFormat()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Usage: %d", jint(BasicOboeDuplexEngine::outputStream->getUsage()));
+        __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Content Type: %d", jint(BasicOboeDuplexEngine::outputStream->getContentType()));
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Channel Mask: %d", BasicOboeDuplexEngine::outputStream->getChannelMask());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Channels: %d", BasicOboeDuplexEngine::outputStream->getChannelCount());
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Output Sample Rate: %d", BasicOboeDuplexEngine::outputStream->getSampleRate());
@@ -484,6 +416,7 @@ Java_org_tpkarras_basicoboe_Stream_deviceTerminate(JNIEnv *env, jobject thiz) {
         BasicOboeDuplexEngine::inputStream.reset();
         BasicOboeDuplexEngine::outputStream->close();
         BasicOboeDuplexEngine::outputStream.reset();
+        duplex = false;
     }
     __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Successfully closed stream");
 
@@ -705,43 +638,53 @@ Java_org_tpkarras_basicoboe_Stream_getDeviceId(JNIEnv *env, jobject thiz) {
 }
 
 
-JNIEXPORT jobjectArray JNICALL
+JNIEXPORT jintArray JNICALL
 Java_org_tpkarras_basicoboe_Stream_getFormat(JNIEnv *env, jobject thiz) {
-    std::vector<oboe::AudioFormat> formats;
+    jint *formats = nullptr;
     if (!duplex) {
         if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jobjectArray(nullptr);
+            return jintArray(nullptr);
         }
-        formats[0] = BasicOboeEngine::stream->getFormat();
+        formats[0] = (jint)BasicOboeEngine::stream->getFormat();
     } else {
         if (BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed ||
             BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed) {
             JNITools::throwJavaException(env, "java/lang/Exception",
                                          "Stream closed");
-            return jobjectArray(nullptr);
+            return jintArray(nullptr);
         }
-        formats[0] = BasicOboeDuplexEngine::inputStream->getFormat();
-        formats[1] = BasicOboeDuplexEngine::outputStream->getFormat();
+        formats[0] = (jint)BasicOboeDuplexEngine::inputStream->getFormat();
+        formats[1] = (jint)BasicOboeDuplexEngine::outputStream->getFormat();
     }
 
-    jobjectArray stringArray = env->NewObjectArray(formats.size(),
-                                                   env->FindClass("java/lang/String"), nullptr);
-    if (stringArray == nullptr) {
-        JNITools::throwJavaException(env, "java/lang/Exception",
-                                     "Out of memory");
-        return nullptr;
+    return reinterpret_cast<jintArray>(formats);
+
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_tpkarras_basicoboe_Stream_getContentType(JNIEnv *env, jobject thiz) {
+    jint *contentType = nullptr;
+    if (!duplex) {
+        if (BasicOboeEngine::stream->getState() == oboe::StreamState::Closed) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
+        contentType[0] = (jint)BasicOboeEngine::stream->getContentType();
+    } else {
+        if (BasicOboeDuplexEngine::inputStream->getState() == oboe::StreamState::Closed ||
+            BasicOboeDuplexEngine::outputStream->getState() == oboe::StreamState::Closed) {
+            JNITools::throwJavaException(env, "java/lang/Exception",
+                                         "Stream closed");
+            return jintArray(nullptr);
+        }
+        contentType[0] = (jint)BasicOboeDuplexEngine::inputStream->getContentType();
+        contentType[1] = (jint)BasicOboeDuplexEngine::outputStream->getContentType();
     }
 
-    for (int i = 0; i < formats.size(); i++) {
-
-            env->SetObjectArrayElement(stringArray, i, (jstring) StreamTools::formatToString(formats[i]).data());
-
-    }
-
-    return stringArray;
-
+    return reinterpret_cast<jintArray>(contentType);
 
 }
 

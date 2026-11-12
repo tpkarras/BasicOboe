@@ -6,7 +6,7 @@ public final class SharingMode {
         throw new UnsupportedOperationException("Not a instantiable class");
     }
 
-    public static final String Exclusive = "Exclusive";
-    public static final String Shared = "Shared";
+    public static final boolean Exclusive = true;
+    public static final boolean Shared = false;
 
 }

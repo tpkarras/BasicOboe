@@ -6,8 +6,8 @@ public final class AudioAPIs {
         throw new UnsupportedOperationException("Not a instantiable class");
     }
 
-    public static final String AAudio = "AAudio";
-    public static final String OpenSL_ES = "OpenSL_ES";
-    public static final String Unspecified = "Unspecified";
+    public static final int AAudio = 2;
+    public static final int OpenSL_ES = 1;
+    public static final int Unspecified = 0;
 
 }

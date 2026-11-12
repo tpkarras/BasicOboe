@@ -5,17 +5,18 @@ public final class Format {
     private Format(){
         throw new UnsupportedOperationException("Not a instantiable class");
     }
-
-    public static final String I16 = "I16";
-    public static final String Float = "Float";
-    public static final String I24 = "I24";
-    public static final String I32 = "I32";
-    public static final String IEC61937 = "IEC61937";
-    public static final String MP3 = "MP3";
-    public static final String AAC_LC = "AAC_LC";
-    public static final String AAC_HE_V1 = "AAC_HE_V1";
-    public static final String AAC_HE_V2 = "AAC_HE_V2";
-    public static final String AAC_ELD = "AAC_ELD";
-    public static final String AAC_XHE = "AAC_XHE";
-    public static final String OPUS = "OPUS";
+public static final int Invalid = -1;
+    public static final int Unspecified = 0;
+    public static final int I16 = 1;
+    public static final int Float = 2;
+    public static final int I24 = 3;
+    public static final int I32 = 4;
+    public static final int IEC61937 = 5;
+    public static final int MP3 = 6;
+    public static final int AAC_LC = 7;
+    public static final int AAC_HE_V1 = 8;
+    public static final int AAC_HE_V2 = 9;
+    public static final int AAC_ELD = 10;
+    public static final int AAC_XHE = 11;
+    public static final int OPUS = 12;
 }

@@ -9,14 +9,14 @@ afterEvaluate {
             register<MavenPublication>("debug") {
                 groupId = "org.tpkarras"
                 artifactId = "BasicOboe"
-                version = "0.0.1-debug"
+                version = "0.0.2-debug"
 
                 from(components["debug"])
             }
             register<MavenPublication>("release") {
                 groupId = "org.tpkarras"
                 artifactId = "BasicOboe"
-                version = "0.0.1"
+                version = "0.0.2"
 
                 from(components["release"])
             }
@@ -31,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 29
+        minSdk = 27
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {

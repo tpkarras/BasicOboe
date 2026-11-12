@@ -20,8 +20,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/callback.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tools/jni-tools.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tools/jni-tools.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tools/stream-tools.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/tools/stream-tools.cpp)
+)
 
 # Find the Oboe package
 find_package (oboe REQUIRED CONFIG)
