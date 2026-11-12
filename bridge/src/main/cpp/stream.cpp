@@ -67,10 +67,12 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
 
             if (current == 0) {
                 currentType = (char *) "Output";
+                __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Setting %s deviceID", currentType);
                 instance.setDeviceId(deviceIDOutput);
                 instance.setDirection(oboe::Direction::Output);
             } else {
                 currentType = (char *) "Input";
+                __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Setting %s deviceID", currentType);
                 instance.setDeviceId(deviceIDInput);
                 instance.setDirection(oboe::Direction::Input);
             }
@@ -208,7 +210,7 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
 
         if (instanceTasks.size() == 2 && current == 0) {
             instance.setBufferCapacityInFrames(
-                    BasicOboeDuplexEngine::outputStream->getBufferCapacityInFrames() * channels);
+                    BasicOboeDuplexEngine::inputStream->getBufferCapacityInFrames() * 2);
         }
 
         __android_log_print(ANDROID_LOG_DEBUG, "OboeStream", "Opening stream");
