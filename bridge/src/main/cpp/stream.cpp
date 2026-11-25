@@ -157,7 +157,7 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
                 instance.setSharingMode(oboe::SharingMode::Exclusive);
             }
 
-        if (current == 0 && inputIsSpatial == JNI_TRUE || current == 1 && outputIsSpatial == JNI_TRUE) {
+        if (current == 0 && outputIsSpatial == JNI_TRUE || current == 1 && inputIsSpatial == JNI_TRUE) {
             __android_log_print(ANDROID_LOG_DEBUG, "OboeBuilder", "Setting %s Spatialization Flag",
                                 currentType);
             instance.setIsContentSpatialized(true);
