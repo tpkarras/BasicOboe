@@ -164,9 +164,9 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
         }
 
         if (current == 0) {
-            usage = inputUsage;
-        } else {
             usage = outputUsage;
+        } else {
+            usage = inputUsage;
         }
 
         if (usage > 0) {
@@ -175,9 +175,9 @@ Java_org_tpkarras_basicoboe_Stream_deviceInitialize(JNIEnv *env, jobject thiz,
         }
 
         if (current == 0) {
-            contentType = inputContentType;
-        } else {
             contentType = outputContentType;
+        } else {
+            contentType = inputContentType;
         }
 
         if (contentType > 0) {
